@@ -1,6 +1,7 @@
 from django.shortcuts import render, HttpResponse, redirect
 from .models import Chave, Usuario, Emprestimo
 from .forms import UsuarioForm #importa o formulário
+from django.contrib import messages  # <--- Faltava esta importação!
 
 # Create your views here.
 def home(request):
@@ -32,3 +33,12 @@ def cadastrar_usuario(request):
         
     # Mostra a página form.html, enviando o formulário (vazio ou com erros) para lá
     return render(request, 'home/usuarios/form.html', {'form': form})
+
+#remover usuário, editar usuario, listar usuário
+# controle_chaves/views.py
+
+def listar_usuario(request): # <--- CERTIFIQUE-SE DE QUE O NOME É ESTE
+    contexto = {
+        'lista': Usuario.objects.all().order_by('-id'),
+    }
+    return render(request, 'home/usuarios/listagem.html', contexto)

@@ -1,46 +1,76 @@
+{% extends "home/base.html" %}
 
-{% extends "base.html" %}
-{}
-
-{% block titulo %}Novo Usuário - Guarita IFPI{% endblock %}
-{% comment %} {% block secao_titulo %}Cadastro de Funcionários{% endblock %} {% endcomment %}
+{% block titulo %}Novo Usuário{% endblock %}
 
 {% block conteudo %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm mt-4">
-            <div class="card-header text-white fw-bold" style="background-color: var(--ifpi-verde);">
-                <i class="fas fa-user-plus me-2"></i> Adicionar Novo Usuário
-            </div>
-            
-            <div class="card-body p-4">
-                <!-- IMPORTANTE: Formulários que salvam dados DEVEM ser method="POST" -->
-                <form method="POST" action="{% url 'cadastrar_usuario' %}">
-                    
-                    <!-- Token de Segurança Obrigatório do Django contra ataques CSRF -->
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.nome.id_for_label }}" class="form-label fw-bold">{{ form.nome.label }}</label>
-                        {{ form.nome }}
-                        <!-- Mostra erros específicos deste campo (ex: campo em branco) -->
-                        <div class="text-danger small">{{ form.nome.errors }}</div>
-                    </div>
+<div class="container-fluid px-0"> <div class="row justify-content-center">
+        <div class="col-12"> 
+            <div class="card border-0 shadow-sm mt-2">
+                <div class="card-header text-white fw-bold py-3" style="background-color: var(--ifpi-verde);">
+                    <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i> Cadastro de Usuários</h5>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="POST" action="{% url 'cadastrar_usuario' %}">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label fw-bold">Nome Completo</label>
+                                {{ form.nome }}
+                                <div class="text-danger small">{{ form.nome.errors }}</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Matrícula</label>
+                                {{ form.matricula }}
+                                <div class="text-danger small">{{ form.matricula.errors }}</div>
+                            </div>
+                        </div>
 
-                    <div class="mb-4">
-                        <label for="{{ form.matricula.id_for_label }}" class="form-label fw-bold">{{ form.matricula.label }}</label>
-                        {{ form.matricula }}
-                        <!-- Mostra erros (ex: Matrícula já existe, pois você usou unique=True no model) -->
-                        <div class="text-danger small">{{ form.matricula.errors }}</div>
-                    </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Senha do Embarcado (8 dígitos)</label>
+                                {{ form.senha_embarcado }}
+                                <div class="text-danger small">{{ form.senha_embarcado.errors }}</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Vínculo Institucional</label>
+                                {{ form.vinculo }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Telefone</label>
+                                {{ form.telefone }}
+                            </div>
+                        </div>
 
-                    <div class="d-flex justify-content-end">
-                        <a href="{% url 'home' %}" class="btn btn-secondary me-2">Cancelar</a>
-                        <button type="submit" class="btn btn-success" style="background-color: var(--ifpi-verde-escuro); border: none;">
-                            <i class="fas fa-save me-2"></i> Salvar Usuário
-                        </button>
-                    </div>
-                </form>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold">E-mail</label>
+                                {{ form.email }}
+                                <div class="text-danger small">{{ form.email.errors }}</div>
+                            </div>
+                        </div>
+
+                        <hr class="mt-4 mb-4">
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            
+                            <a href="{% url 'listar_usuario' %}" class="btn shadow-sm px-4" 
+                                style="background-color: rgba(108, 117, 125, 0.15); border: 1px solid rgba(108, 117, 125, 0.2); color: #6c757d;">
+                                    <i class="fas fa-chevron-left me-2">
+                                    </i> Voltar para Listagem
+                            </a>
+
+                            <div>
+                                <button type="reset" class="btn btn-light me-2">Limpar</button>
+                                <button type="submit" class="btn btn-success px-5 shadow-sm" style="background-color: var(--ifpi-verde-escuro);">
+                                    <i class="fas fa-save me-2"></i> Finalizar Cadastro
+                                </button>
+                            </div>
+                            
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

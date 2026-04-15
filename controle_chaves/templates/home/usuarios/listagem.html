@@ -1,0 +1,56 @@
+{% extends 'home/base.html' %}
+
+{% block titulo %} Listagem de Usuários {% endblock %}
+
+{% block conteudo %}
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h3 class="m-0 font-weight-bold text-primary">Usuários Cadastrados</h3>
+            <div>
+                <a href="{% url 'cadastrar_usuario' %}" class="btn btn-primary">
+                    <span class="text">Inserir Novo</span>
+                </a>
+                <a href="{% url 'listar_usuario' %}" class="btn btn-secondary">
+                    <span class="text">Recarregar</span>
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Matricula</th>
+                            <th>Vinculo</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in lista %}
+                        <tr >
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.nome }}</td>
+                            <td>{{ item.matricula }}</td>
+                            <td>{{ item.vinculo }}</td>
+                            <td class="text-center">
+                                <a href="#" class="btn btn-warning btn-sm">Editar</a>
+                                <a href="#" class="btn btn-danger btn-sm">Remover</a>
+                                <a href="#" class="btn btn-info btn-sm">Detalhar</a>
+
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">Nenhum usuário cadastrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
