@@ -32,3 +32,8 @@ class UsuarioForm(forms.ModelForm):
         if not senha.isdigit():
             raise forms.ValidationError("A senha deve conter apenas números.")
         return senha
+    
+from django import forms
+from .models import Usuario # Certifique-se de que Usuario está aqui
+
+

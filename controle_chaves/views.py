@@ -42,3 +42,61 @@ def listar_usuario(request): # <--- CERTIFIQUE-SE DE QUE O NOME É ESTE
         'lista': Usuario.objects.all().order_by('-id'),
     }
     return render(request, 'home/usuarios/listagem.html', contexto)
+
+
+# função para editar 
+def editar_usuario(request, id):
+    # 1. Busca o usuário pelo ID ou retorna erro se não existir
+    try:
+        usuario_instancia = Usuario.objects.get(pk=id)
+    except Usuario.DoesNotExist:
+        messages.error(request, 'Usuário não encontrado')
+        return redirect('listar_usuario')
+
+    # 2. Se o usuário enviou o formulário (Clicou em Salvar)
+    if request.method == 'POST':
+        # Passamos os dados do POST E a instância que queremos atualizar
+        form = UsuarioForm(request.POST, instance=usuario_instancia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuário atualizado com sucesso!')
+            return redirect('listar_usuario')
+    
+    # 3. Se ele apenas entrou na página (GET), carrega o form com os dados atuais
+    else:
+        form = UsuarioForm(instance=usuario_instancia)
+    
+    # Reutilizamos o mesmo form.html do cadastro!
+    return render(request, 'home/usuarios/form.html', {'form': form})
+
+
+#Função para remover usuário
+def remover_usuario(request, id):
+    # 1. Tenta encontrar a "pasta" no arquivo usando o ID
+    try:
+        usuario_instancia = Usuario.objects.get(pk=id)
+        # 2. Se encontrou, joga no lixo (deleta do banco)
+        usuario_instancia.delete()
+        # 3. Manda uma mensagem de sucesso para a tela
+        messages.success(request, 'Usuário removido com sucesso!')
+    except Usuario.DoesNotExist:
+        # Se alguém tentar apagar um ID que não existe (ex: digitou na URL)
+        messages.error(request, 'Usuário não encontrado.')
+
+    # 4. Redireciona de volta para a tabela de listagem
+    return redirect('listar_usuario')
+
+# Função para detalhar usuário
+def detalhar_usuario(request, id):
+    # 1. Busca o usuário específico pelo ID
+    try:
+        usuario_instancia = Usuario.objects.get(pk=id)
+    except Usuario.DoesNotExist:
+        messages.error(request, 'Usuário não encontrado.')
+        return redirect('listar_usuario')
+
+    # 2. Envia os dados desse usuário para uma página HTML nova chamada 'detalhes.html'
+    contexto = {
+        'usuario': usuario_instancia
+    }
+    return render(request, 'home/usuarios/detalhes.html', contexto)

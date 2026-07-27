@@ -36,9 +36,20 @@
                             <td>{{ item.matricula }}</td>
                             <td>{{ item.vinculo }}</td>
                             <td class="text-center">
-                                <a href="#" class="btn btn-warning btn-sm">Editar</a>
-                                <a href="#" class="btn btn-danger btn-sm">Remover</a>
-                                <a href="#" class="btn btn-info btn-sm">Detalhar</a>
+                                <a href="{% url 'editar_usuario' item.id %}" class="btn btn-warning btn-sm" title="Editar">Editar
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <!-- Botão de Remover (Com dica de Sênior: Confirmação de segurança!) -->
+                                <a href="{% url 'remover_usuario' item.id %}" 
+                                    class="btn btn-danger btn-sm" 
+                                    onclick="return confirm('Tem certeza que deseja apagar o usuário {{ item.nome }}?');">
+                                    <i class="fas fa-trash"></i> Remover
+                                </a>
+
+                                <!-- Botão de Detalhar -->
+                                <a href="{% url 'detalhar_usuario' item.id %}" class="btn btn-info btn-sm text-white">
+                                    <i class="fas fa-eye"></i> Detalhar
+                                </a>
 
                             </td>
                         </tr>
