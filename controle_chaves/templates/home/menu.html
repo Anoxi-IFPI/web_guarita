@@ -1,7 +1,7 @@
 <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h4 class="mb-0 fw-bold">GUARITA-IF</h4>
-            <small>Campus Sul</small>
+            <h4 class="mb-0 fw-bold">GUARITA</h4>
+            <small> IFPI Catzs </small>
         </div>
         
         <div class="p-3 d-flex align-items-center border-bottom border-dark">
@@ -9,7 +9,7 @@
                 
             </div>
             <div class="ms-3">
-                <h6 class="mb-0">Antonio</h6>
+                <h6 class="mb-0">Painel</h6>
             </div>
         </div>
 
@@ -24,8 +24,17 @@
                     <i class="fas fa-chevron-down small" style="width: auto;"></i>
                 </a>
                 <ul class="submenu nav flex-column collapse" id="submenuCadastro">
-                    <li class="nav-item"><a href="{% url 'listar_usuario' %}" class="nav-link"><i class="fas fa-angle-right" style="width: auto; font-size: 10px;"></i> Usuarios </a></li>
-                    <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-angle-right" style="width: auto; font-size: 10px;"></i> Chaves </a></li>
+                    <li class="nav-item">
+                        <a href="{% url 'listar_usuario' %}" class="nav-link">
+                            <i class="fas fa-angle-right" style="width: auto; font-size: 10px;"></i> Usuarios 
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'listar_chave'%}" class="nav-link">
+                            <i class="fas fa-angle-right" style="width: auto; font-size: 10px;">
+                            </i> Chaves 
+                        </a>
+                    </li>
                     <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-angle-right" style="width: auto; font-size: 10px;"></i> Emprestimos </a></li>
                 </ul>
             </li> 

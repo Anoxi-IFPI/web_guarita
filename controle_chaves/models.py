@@ -16,8 +16,6 @@ class Usuario(models.Model):
 
     nome = models.CharField(max_length=100)
     matricula = models.CharField(max_length=20, unique=True)
-    # Senha de 8 dígitos para o hardware/embarcado
-    senha_embarcado = models.CharField(max_length=8, help_text="Senha numérica de 8 dígitos")
     vinculo = models.CharField(max_length=20, choices=VINCULO_CHOICES, default='ALUNO')
     email = models.EmailField()
     telefone = models.CharField(max_length=15)
@@ -26,8 +24,8 @@ class Usuario(models.Model):
         return self.nome
     
     
-#classe para as chaves
 class Chave(models.Model):
+    # Novo campo para a Tag RFID
     nome = models.CharField(max_length=50) # Ex: Chave 01
     setor = models.CharField(max_length=100) # Ex: Laboratório de Informática
     disponivel = models.BooleanField(default=True)

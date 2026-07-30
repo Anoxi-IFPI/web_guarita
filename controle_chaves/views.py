@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse, redirect
 from .models import Chave, Usuario, Emprestimo
+from .forms import UsuarioForm, ChaveForm # <--- Adicionamos o ChaveForm aqui
 from .forms import UsuarioForm #importa o formulário
 from django.contrib import messages  # <--- Faltava esta importação!
 
@@ -22,7 +23,7 @@ def cadastrar_usuario(request):
         if form.is_valid():
             form.save() # Guarda automaticamente na base de dados!
             messages.success(request, 'Utilizador cadastrado com sucesso!')
-            return redirect('home') # Volta para a página inicial após salvar
+            return redirect('listar_usuario') # Volta para a página de listagem após salvar
         else:
             # Se houver erro (ex: faltou o nome), recarrega a página mostrando o erro
             messages.error(request, 'Erro ao cadastrar. Por favor, verifica os dados.')
@@ -100,3 +101,88 @@ def detalhar_usuario(request, id):
         'usuario': usuario_instancia
     }
     return render(request, 'home/usuarios/detalhes.html', contexto)
+
+
+# ==========================================
+# VIEWS PARA GESTÃO DE CHAVES
+# ==========================================
+
+def listar_chave(request):
+    # 1. Busca todas as chaves no banco e ordena da mais nova para a mais velha
+    contexto = {
+        'lista': Chave.objects.all().order_by('-id'),
+    }
+    # 2. Envia os dados para a sala de leitura (template)
+    return render(request, 'home/chaves/listagem.html', contexto)
+
+def cadastrar_chave(request):
+    # 1. Se os dados vieram do botão "Salvar" (POST)
+    if request.method == 'POST':
+        form = ChaveForm(request.POST) 
+        if form.is_valid():
+            form.save() # Mágica: salva a chave no banco!
+            messages.success(request, 'Chave cadastrada com sucesso!')
+            return redirect('listar_chave') # Após salvar, vai para a listagem
+        else:
+            messages.error(request, 'Erro ao cadastrar a chave. Verifique os campos.')
+            
+    # 2. Se o usuário só abriu a página (GET)
+    else:
+        form = ChaveForm() # Formulário em branco
+        
+    # 3. Desenha a tela de formulário
+    return render(request, 'home/chaves/form.html', {'form': form})
+
+# Função para detalhar chaves
+def detalhar_chave(request, id):
+    try:
+        Chave_instancia = Chave.objects.get(pk=id)
+    except Chave.DoesNotExist:
+        messages.error(request, 'Chave não encontrada.')
+        return redirect('listar_chave')
+
+    # 2. Envia os dados desse usuário para uma página HTML nova chamada 'detalhes.html'
+    contexto = {
+        'chave': Chave_instancia
+    }
+    return render(request, 'home/chaves/detalhes.html', contexto)
+
+def remover_chave(request, id):
+    # 1. Tenta encontrar a "pasta" no arquivo usando o ID
+    try:
+        chave_instancia = Chave.objects.get(pk=id)
+        # 2. Se encontrou, joga no lixo (deleta do banco)
+        chave_instancia.delete()
+        # 3. Manda uma mensagem de sucesso para a tela
+        messages.success(request, 'Chave removida com sucesso!')
+    except Chave.DoesNotExist:
+        # Se alguém tentar apagar um ID que não existe (ex: digitou na URL)
+        messages.error(request, 'Chave não encontrada.')
+
+    # 4. Redireciona de volta para a tabela de listagem
+    return redirect('listar_chave')
+
+
+def editar_chave(request, id):
+    # 1. Busca a chave pelo ID ou retorna erro se não existir
+    try:
+        chave_instancia = Chave.objects.get(pk=id)
+    except Chave.DoesNotExist:
+        messages.error(request, 'Chave não encontrada')
+        return redirect('listar_chave')
+
+    # 2. Se o usuário enviou o formulário (Clicou em Salvar)
+    if request.method == 'POST':
+        # Passamos os dados do POST E a instância que queremos atualizar
+        form = ChaveForm(request.POST, instance=chave_instancia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Chave atualizada com sucesso!')
+            return redirect('listar_chave')
+    
+    # 3. Se ele apenas entrou na página (GET), carrega o form com os dados atuais
+    else:
+        form = ChaveForm(instance=chave_instancia)
+    
+    # Reutilizamos o mesmo form.html do cadastro!
+    return render(request, 'home/chaves/form.html', {'form': form})

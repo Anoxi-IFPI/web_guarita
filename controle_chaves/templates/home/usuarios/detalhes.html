@@ -7,13 +7,12 @@
     <div class="row justify-content-center">
         <div class="col-12"> 
             <div class="card border-0 shadow-sm mt-2">
-                <!-- Cabeçalho com o verde padrão do IFPI -->
+                
                 <div class="card-header text-white fw-bold py-3" style="background-color: var(--ifpi-verde);">
                     <h5 class="mb-0"><i class="fas fa-id-card me-2"></i> Detalhes do Usuário</h5>
                 </div>
                 
                 <div class="card-body p-4">
-                    <!-- Os campos usam readonly para não permitir edição -->
                     <div class="row">
                         <div class="col-md-2 mb-3">
                             <label class="form-label fw-bold">ID</label>
@@ -21,7 +20,6 @@
                         </div>
                         <div class="col-md-10 mb-3">
                             <label class="form-label fw-bold">Nome Completo</label>
-                            <!-- Usamos usuario.nome pois foi o nome que a View enviou no contexto -->
                             <input type="text" class="form-control bg-light" value="{{ usuario.nome }}" readonly>
                         </div>
                     </div>
@@ -33,7 +31,6 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold">Vínculo Institucional</label>
-                            <!-- get_vinculo_display mostra 'Aluno' formatado ao invés de 'ALUNO' do banco -->
                             <input type="text" class="form-control bg-light" value="{{ usuario.get_vinculo_display }}" readonly>
                         </div>
                         <div class="col-md-4 mb-3">
@@ -42,25 +39,19 @@
                         </div>
                     </div>
 
+                    <!-- Linha do e-mail expandida para ocupar o espaço que era da senha -->
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-12 mb-3">
                             <label class="form-label fw-bold">E-mail</label>
                             <input type="text" class="form-control bg-light" value="{{ usuario.email }}" readonly>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Senha do Embarcado</label>
-                            <!-- Tipo password para manter a segurança mesmo na tela de detalhes -->
-                            <input type="password" class="form-control bg-light" value="{{ usuario.senha_embarcado }}" readonly>
                         </div>
                     </div>
 
                     <hr class="mt-4 mb-4">
 
-                    <!-- Botão de voltar, alinhado à esquerda como no seu projeto anterior -->
                     <div class="d-flex justify-content-start">
-                        <a href="{% url 'listar_usuario' %}" class="btn shadow-sm px-4" 
-                           style="background-color: rgba(108, 117, 125, 0.15); border: 1px solid rgba(108, 117, 125, 0.2); color: #6c757d;">
-                            <i class="fas fa-chevron-left me-2"></i> Voltar para Listagem
+                        <a href="{% url 'listar_usuario' %}"class="btn btn-secondary shadow-sm px-4 text-white">
+                                     <i class="fas fa-chevron-left me-2"></i> Voltar para Listagem
                         </a>
                     </div>
                 </div>

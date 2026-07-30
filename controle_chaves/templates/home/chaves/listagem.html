@@ -1,0 +1,68 @@
+{% extends 'home/base.html' %}
+
+{% block titulo %} Chaves Cadastradas {% endblock %}
+
+{% block conteudo %}
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4 border-0">
+        <!-- Cabeçalho com a cor padrão -->
+        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: var(--ifpi-verde);">
+            <h5 class="m-0 font-weight-bold text-white"><i class="fas fa-key me-2"></i> Acervo de Chaves</h5>
+            <div>
+                <a href="{% url 'cadastrar_chave' %}" class="btn btn-light text-success fw-bold btn-sm shadow-sm">
+                    <i class="fas fa-plus me-1"></i> Inserir Nova
+                </a>
+                <a href="{% url 'listar_chave' %}" class="btn btn-secondary btn-sm shadow-sm text-white">
+                    <i class="fas fa-sync-alt me-1"></i> Recarregar
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome da Chave</th>
+                            <th>Setor / Local</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in lista %}
+                        <tr>
+                            <td><strong>{{ item.id }}</strong></td>
+                            <td>{{ item.nome }}</td>
+                            <td>{{ item.setor }}</td>
+                            <td class="text-center">
+                                <!-- Substituímos a tag de url pelo jogo da velha '#' -->
+                                <a href="{% url 'editar_chave' item.id %}" class="btn btn-sm text-white shadow-sm" style="background-color: #495057;" title="Editar">
+                                <i class="fas fa-edit me-1"></i> Editar
+                                </a>
+                                
+                                <a href="{% url 'remover_chave' item.id %}" class="btn btn-danger btn-sm" 
+                                onclick="return confirm('Tem certeza que deseja apagar a chave {{ item.nome }}?');" title="Remover">
+                                    <i class="fas fa-trash"></i> Remover
+                                </a>
+
+                                <a href="{% url 'detalhar_chave' item.id %}" class="btn btn-primary btn-sm text-white shadow-sm" title="Detalhar">
+                                    <i class="fas fa-eye"></i> Detalhar
+                                </a>
+                        </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">
+                                <i class="fas fa-info-circle fs-4 mb-2 d-block"></i>
+                                Nenhuma chave cadastrada no sistema.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
