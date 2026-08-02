@@ -17,10 +17,11 @@ class UsuarioForm(forms.ModelForm):
 class ChaveForm(forms.ModelForm):
     class Meta:
         model = Chave
-        fields = ['nome', 'setor',]
+        fields = ['nome', 'setor', 'bloco']
         
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Chave 01'}),
             'setor': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Laboratório de Informática'}),
+            'bloco': forms.Select(attrs={'class': 'form-select'}),
             # 'disponivel': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

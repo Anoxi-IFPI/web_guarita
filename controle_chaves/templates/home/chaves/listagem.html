@@ -25,7 +25,8 @@
                         <tr>
                             <th>ID</th>
                             <th>Nome da Chave</th>
-                            <th>Setor / Local</th>
+                            <th>Setor</th>
+                            <th>Bloco</th>
                             <th class="text-center">Ações</th>
                         </tr>
                     </thead>
@@ -35,6 +36,7 @@
                             <td><strong>{{ item.id }}</strong></td>
                             <td>{{ item.nome }}</td>
                             <td>{{ item.setor }}</td>
+                            <td>{{ item.get_bloco_display }}</td>
                             <td class="text-center">
                                 <!-- Substituímos a tag de url pelo jogo da velha '#' -->
                                 <a href="{% url 'editar_chave' item.id %}" class="btn btn-sm text-white shadow-sm" style="background-color: #495057;" title="Editar">
