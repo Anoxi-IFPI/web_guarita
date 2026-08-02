@@ -20,7 +20,7 @@ class ChaveForm(forms.ModelForm):
         fields = ['nome', 'setor',]
         
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Chave 01'}),
-            'setor': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Laboratório de Informática'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Laboratório de Informática'}),
+            'setor': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Bloco A / Sala 01'}),
             # 'disponivel': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
