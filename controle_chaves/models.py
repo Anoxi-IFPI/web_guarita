@@ -24,32 +24,14 @@ class Usuario(models.Model):
         return self.nome
     
     
-# models.py
-from django.db import models
-
 class Chave(models.Model):
-    # Criamos uma lista de tuplas. 
-    # O primeiro valor ('A') é o que vai para o banco de dados.
-    # O segundo valor ('Bloco A') é o que aparece na tela para o usuário.
-    OPCOES_BLOCO = [
-        ('A', 'Bloco A'),
-        ('B', 'Bloco B'),
-        ('C', 'Bloco C'),
-        ('D', 'Bloco D'),
-    ]
-
-    nome = models.CharField(max_length=100)
-    setor = models.CharField(max_length=100)
-    # Adicionamos o novo campo aqui:
-    bloco = models.CharField(
-        max_length=1, 
-        choices=OPCOES_BLOCO, 
-        default='A',
-        verbose_name="Bloco/Local"
-    )
+    # Novo campo para a Tag RFID
+    nome = models.CharField(max_length=50) # Ex: Chave 01
+    setor = models.CharField(max_length=100) # Ex: Laboratório de Informática
+    disponivel = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.nome
+        return f"{self.nome} - {self.setor}"
 
 #classe de emprestimos 
 class Emprestimo(models.Model):
