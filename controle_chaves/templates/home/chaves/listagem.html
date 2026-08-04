@@ -49,6 +49,10 @@
                                 <a href="{% url 'detalhar_chave' item.id %}" class="btn btn-primary btn-sm text-white shadow-sm" title="Detalhar">
                                     <i class="fas fa-eye"></i> Detalhar
                                 </a>
+
+                                <a href="{% url 'gerar_barcode' item.id %}" class="btn btn-dark btn-sm text-white shadow-sm" title="Gerar Código de Barras" target="_blank">
+                                    <i class="fas fa-barcode"></i> Código de Barras
+                                </a>
                         </td>
                         </tr>
                         {% empty %}

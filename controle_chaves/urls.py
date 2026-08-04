@@ -17,5 +17,7 @@ urlpatterns = [
     path('chaves/detalhes/<int:id>/', views.detalhar_chave, name='detalhar_chave'),
     path('chaves/remover/<int:id>/', views.remover_chave, name='remover_chave'),
     path('chaves/editar/<int:id>/', views.editar_chave, name='editar_chave'),
+    path("barcode/<int:id>/",views.gerar_codigo_barras,name="gerar_barcode"),
+
     
 ]

@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imprimir Etiqueta - Chave {{ id }}</title>
+    
+    <!-- Chamando o CSS do jeito Django -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    
+</head>
+<body>
+
+    <!-- Container que simula o cartão -->
+     <h3>{{ chave.nome }}</h3>
+    <div class="cartao-etiqueta">
+        <h3>Chave: {{ id }}</h3>
+        
+        <img 
+            src="data:image/png;base64,{{ barcode }}" 
+            alt="Código de barras da Chave {{ id }}"
+        >
+    </div>
+
+</body>
+</html>

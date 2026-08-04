@@ -3,8 +3,19 @@ from .models import Chave, Usuario, Emprestimo
 from .forms import UsuarioForm, ChaveForm # <--- Adicionamos o ChaveForm aqui
 from .forms import UsuarioForm #importa o formulário
 from django.contrib import messages  # <--- Faltava esta importação!
+import io
+import base64
+import barcode
+from barcode.writer import ImageWriter
+from django.shortcuts import render
+
+
 
 # Create your views here.
+
+# ==========================================
+# VIEWS PARA PAGINA INICIAL
+# ========================================== 
 def home(request):
     
     #busca as chaves
@@ -12,7 +23,7 @@ def home(request):
     
     return render(request, 'home/index.html', {'chaves': home})
 
-
+#Viws da pagina de usuários
 # NOVA VIEW: Para o formulário de cadastro de utilizadores
 def cadastrar_usuario(request):
     # Se o utilizador clicou no botão "Salvar" (enviou os dados)
@@ -186,3 +197,35 @@ def editar_chave(request, id):
     
     # Reutilizamos o mesmo form.html do cadastro!
     return render(request, 'home/chaves/form.html', {'form': form})
+
+def gerar_codigo_barras(request, id):
+
+    # Valor que será codificado
+    codigo = str(id)
+
+    # Cria Code128
+    code128 = barcode.get(
+        'code128',
+        codigo,
+        writer=ImageWriter()
+    )
+
+    # Gera imagem em memória
+    buffer = io.BytesIO()
+
+    code128.write(buffer)
+
+    # Converte para base64
+    imagem_base64 = base64.b64encode(
+        buffer.getvalue()
+    ).decode('utf-8')
+
+
+    contexto = {
+        "id": id,
+        "barcode": imagem_base64,
+    }
+
+    return render(
+        request,"home/cod_barras/codigo_barras.html",contexto
+    )
