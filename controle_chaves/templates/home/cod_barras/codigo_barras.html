@@ -7,22 +7,24 @@
     <title>Imprimir Etiqueta - Chave {{ id }}</title>
     
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    
 </head>
 <body>
 
     <div class="cartao-etiqueta">
+        <!-- Código da chave no topo -->
+        <h3>Chave: {{ id }}</h3>
         
-        <h3>Chave {{ id }}</h3>
-        
+        <!-- Imagem do Código de Barras -->
         <img 
             src="data:image/png;base64,{{ barcode }}" 
             alt="Código de barras da Chave {{ id }}"
         >
         
-        {% comment %} <p style="font-size: 16px; font-weight: bold; color: #333; margin-top: 10px;">
-            Cód: {{ id }}
-        </p> {% endcomment %}
+        <!-- Nome e Setor vindos diretamente das variáveis isoladas do contexto -->
+        <div style="margin-top: 10px; font-size: 14px; color: #333; text-align: left; padding: 0 5px;">
+            <h3 style="margin: 4px 0;"><strong>Nome:</strong> {{ nome }}</h3>
+            <h3 style="margin: 4px 0;"><strong>Setor:</strong> {{ setor }}</h3>
+        </div>
     </div>
 
 </body>

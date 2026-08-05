@@ -1,13 +1,13 @@
 from django.shortcuts import render, HttpResponse, redirect
 from .models import Chave, Usuario, Emprestimo
 from .forms import UsuarioForm, ChaveForm # <--- Adicionamos o ChaveForm aqui
-from .forms import UsuarioForm #importa o formulário
 from django.contrib import messages  # <--- Faltava esta importação!
 import io
 import base64
 import barcode
 from barcode.writer import ImageWriter
 from django.shortcuts import render
+from .models import Chave
 
 
 
@@ -199,33 +199,37 @@ def editar_chave(request, id):
     return render(request, 'home/chaves/form.html', {'form': form})
 
 def gerar_codigo_barras(request, id):
+    # 1. PRIMEIRO PASSO: Buscar o objeto diretamente no banco de dados!
+    # É isso que estava faltando para a variável existir na memória.
+    chave_instancia = Chave.objects.get(pk=id)
 
-    # Valor que será codificado
+    # 2. Valor que será codificado
     codigo = str(id)
 
-    # Cria Code128
+    # 3. Cria Code128
     code128 = barcode.get(
         'code128',
         codigo,
         writer=ImageWriter()
     )
 
-    # Gera imagem em memória
+    # 4. Gera imagem em memória
     buffer = io.BytesIO()
-
     code128.write(buffer)
 
-    # Converte para base64
+    # 5. Converte para base64
     imagem_base64 = base64.b64encode(
         buffer.getvalue()
     ).decode('utf-8')
 
-
+    # 6. Agora o contexto consegue encontrar a 'chave_instancia' declarada lá na primeira linha
     contexto = {
         "id": id,
+        "nome": chave_instancia.nome,
+        "setor": chave_instancia.setor,
         "barcode": imagem_base64,
     }
 
     return render(
-        request,"home/cod_barras/codigo_barras.html",contexto
+        request, "home/cod_barras/codigo_barras.html", contexto
     )
