@@ -4,10 +4,12 @@ from .forms import UsuarioForm, ChaveForm # <--- Adicionamos o ChaveForm aqui
 from django.contrib import messages  # <--- Faltava esta importação!
 import io
 import base64
+import json
+from django.http import JsonResponse
 import barcode
 from barcode.writer import ImageWriter
 from django.shortcuts import render
-from .models import Chave
+from .models import Chave, Emprestimo, Usuario
 
 
 
@@ -233,3 +235,51 @@ def gerar_codigo_barras(request, id):
     return render(
         request, "home/cod_barras/codigo_barras.html", contexto
     )
+
+# ==========================================
+# VIEWS PARA GESTÃO DE EMPRÉSTIMOS
+# ========================================== 
+# 1. View que envia os dados pro seu Front-end (Para não usar Banco de Dados toda hora)
+def pagina_emprestimos(request):
+    # Buscamos apenas os campos necessários, exatamente com os nomes que seu JS espera
+    usuarios = list(Usuario.objects.values('id', 'nome', 'matricula', 'vinculo'))
+    chaves = list(Chave.objects.values('id', 'nome', 'setor'))
+
+    context = {
+        'usuarios_json': json.dumps(usuarios),
+        'chaves_json': json.dumps(chaves),
+    }
+    return render(request, 'home/emprestimos/emprestimos.html', context)
+
+# 2. View que recebe o JSON do JavaScript e salva no Banco de Dados
+def salvar_emprestimo(request):
+    # Só aceitamos requisições do tipo POST (envio de dados)
+    if request.method == 'POST':
+        try:
+            # json.loads "traduz" o pacote que o JavaScript enviou para um Dicionário Python
+            dados = json.loads(request.body)
+            
+            # Passo A: Buscamos o usuário no banco usando a matrícula que veio do JS
+            usuario_obj = Usuario.objects.get(matricula=dados['usuario']['matricula'])
+            
+            # Passo B: Criamos a "pasta" do empréstimo (ainda sem as chaves)
+            novo_emprestimo = Emprestimo.objects.create(usuario=usuario_obj)
+            
+            # Passo C: Lemos a lista de chaves do JS e guardamos uma a uma dentro do empréstimo
+            for chave_dado in dados['chaves']:
+                chave_obj = Chave.objects.get(id=chave_dado['id'])
+                novo_emprestimo.chaves.add(chave_obj) # O .add() é usado para ManyToMany
+                
+            # Tudo deu certo! Retornamos sucesso para o JavaScript mostrar o Card Verde.
+            return JsonResponse({"status": "sucesso"})
+            
+        # Boas Práticas: Tratamento de Erros (Debugging pro Front-end)
+        except Usuario.DoesNotExist:
+            return JsonResponse({"erro": "Usuário não localizado no banco"}, status=404)
+        except Chave.DoesNotExist:
+            return JsonResponse({"erro": "Chave não localizada no banco"}, status=404)
+        except Exception as e:
+            return JsonResponse({"erro": str(e)}, status=500)
+
+    # Se alguém tentar acessar a URL diretamente pelo navegador (GET), damos erro.
+    return JsonResponse({"erro": "Método não permitido"}, status=405)

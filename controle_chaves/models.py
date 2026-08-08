@@ -32,16 +32,15 @@ class Chave(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.setor}"
+    
 
-#classe de emprestimos 
 class Emprestimo(models.Model):
-    chave = models.ForeignKey(Chave, on_delete=models.CASCADE)
-    funcionario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-    data_retirada = models.DateTimeField(default=timezone.now)
-    data_devolucao = models.DateTimeField(null=True, blank=True)
-    observacoes = models.TextField(null=True, blank=True)
+    # O Empréstimo une o Usuário, as Chaves e o momento (Data/Hora)
+    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    chaves = models.ManyToManyField(Chave)
+    
+    # default=timezone.now preenche a data e hora automaticamente no momento do registro
+    data_hora = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.chave} com {self.funcionario}"
-    
-    
+        return f"Empréstimo de {self.usuario.nome} em {self.data_hora.strftime('%d/%m/%Y %H:%M')}"

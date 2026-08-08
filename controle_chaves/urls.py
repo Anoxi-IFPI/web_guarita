@@ -19,5 +19,8 @@ urlpatterns = [
     path('chaves/editar/<int:id>/', views.editar_chave, name='editar_chave'),
     path("barcode/<int:id>/",views.gerar_codigo_barras,name="gerar_barcode"),
 
+    # --- ROTAS DE EMPRÉSTIMOS ---
+    path('emprestimos/', views.pagina_emprestimos, name='pagina_emprestimos'),
+    path('emprestimos/cadastrar/', views.salvar_emprestimo, name='salvar_emprestimo'),
     
 ]
