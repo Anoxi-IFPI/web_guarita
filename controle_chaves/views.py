@@ -1,6 +1,6 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import get_object_or_404, render, HttpResponse, redirect
 from .models import Chave, Usuario, Emprestimo
-from .forms import UsuarioForm, ChaveForm # <--- Adicionamos o ChaveForm aqui
+from .forms import EmprestimoForm, UsuarioForm, ChaveForm # <--- Adicionamos o ChaveForm aqui
 from django.contrib import messages  # <--- Faltava esta importação!
 import io
 import base64
@@ -9,7 +9,6 @@ from django.http import JsonResponse
 import barcode
 from barcode.writer import ImageWriter
 from django.shortcuts import render
-from .models import Chave, Emprestimo, Usuario
 
 
 
@@ -235,51 +234,163 @@ def gerar_codigo_barras(request, id):
     return render(
         request, "home/cod_barras/codigo_barras.html", contexto
     )
-
 # ==========================================
-# VIEWS PARA GESTÃO DE EMPRÉSTIMOS
+# VIEWS PARA GESTÃO DE EMPRÉSTIMOS (Lógica de 1 Chave = 1 Empréstimo Sequencial)
 # ========================================== 
-# 1. View que envia os dados pro seu Front-end (Para não usar Banco de Dados toda hora)
-def pagina_emprestimos(request):
-    # Buscamos apenas os campos necessários, exatamente com os nomes que seu JS espera
-    usuarios = list(Usuario.objects.values('id', 'nome', 'matricula', 'vinculo'))
-    chaves = list(Chave.objects.values('id', 'nome', 'setor'))
 
-    context = {
-        'usuarios_json': json.dumps(usuarios),
-        'chaves_json': json.dumps(chaves),
-    }
-    return render(request, 'home/emprestimos/emprestimos.html', context)
+def listar_emprestimos(request):
+    # Exibe EXCLUSIVAMENTE os empréstimos ativos. Os "DEVOLVIDO" somem da tela.
+    emprestimos = Emprestimo.objects.filter(status__in=['NOVO', 'REPASSADO'])
+    return render(request, 'home/emprestimos/listagem.html', {'lista': emprestimos})
 
-# 2. View que recebe o JSON do JavaScript e salva no Banco de Dados
-def salvar_emprestimo(request):
-    # Só aceitamos requisições do tipo POST (envio de dados)
+def cadastrar_emprestimo(request):
     if request.method == 'POST':
-        try:
-            # json.loads "traduz" o pacote que o JavaScript enviou para um Dicionário Python
-            dados = json.loads(request.body)
-            
-            # Passo A: Buscamos o usuário no banco usando a matrícula que veio do JS
-            usuario_obj = Usuario.objects.get(matricula=dados['usuario']['matricula'])
-            
-            # Passo B: Criamos a "pasta" do empréstimo (ainda sem as chaves)
-            novo_emprestimo = Emprestimo.objects.create(usuario=usuario_obj)
-            
-            # Passo C: Lemos a lista de chaves do JS e guardamos uma a uma dentro do empréstimo
-            for chave_dado in dados['chaves']:
-                chave_obj = Chave.objects.get(id=chave_dado['id'])
-                novo_emprestimo.chaves.add(chave_obj) # O .add() é usado para ManyToMany
-                
-            # Tudo deu certo! Retornamos sucesso para o JavaScript mostrar o Card Verde.
-            return JsonResponse({"status": "sucesso"})
-            
-        # Boas Práticas: Tratamento de Erros (Debugging pro Front-end)
-        except Usuario.DoesNotExist:
-            return JsonResponse({"erro": "Usuário não localizado no banco"}, status=404)
-        except Chave.DoesNotExist:
-            return JsonResponse({"erro": "Chave não localizada no banco"}, status=404)
-        except Exception as e:
-            return JsonResponse({"erro": str(e)}, status=500)
+        form = EmprestimoForm(request.POST)
+        if form.is_valid():
+            matricula_digitada = form.cleaned_data['matricula']
+            try:
+                usuario_encontrado = Usuario.objects.get(matricula=matricula_digitada)
+            except Usuario.DoesNotExist:
+                form.add_error('matricula', 'Usuário não encontrado.')
+            else:
+                # Aqui NÃO criamos mais o empréstimo! 
+                # Apenas redirecionamos passando o ID do USUÁRIO (e não do empréstimo)
+                return redirect('adicionar_chaves_emprestimo', id=usuario_encontrado.id)
+    else:
+        form = EmprestimoForm()
 
-    # Se alguém tentar acessar a URL diretamente pelo navegador (GET), damos erro.
-    return JsonResponse({"erro": "Método não permitido"}, status=405)
+    return render(request, 'home/emprestimos/forms.html', {'form': form})
+
+def adicionar_chaves_emprestimo(request, id):
+    # ATENÇÃO: Agora 'id' é o ID do Usuário, não do empréstimo!
+    usuario = get_object_or_404(Usuario, id=id)
+    mensagem_erro = None
+
+    if request.method == 'POST':
+        codigo_digitado = request.POST.get('codigo')
+        if codigo_digitado:
+            # Mantém a correção para evitar erro com texto ao invés de número
+            if not codigo_digitado.isdigit():
+                mensagem_erro = "Erro: Digite apenas números no código da chave!"
+            else:
+                try:
+                    chave_encontrada = Chave.objects.get(id=codigo_digitado)
+                    
+                    # --- NOVA REGRA DE SEGURANÇA ---
+                    # 1. Verifica se a chave JÁ ESTÁ EMPRESTADA para alguém no momento
+                    chave_ocupada = Emprestimo.objects.filter(chaves=chave_encontrada, status__in=['NOVO', 'REPASSADO']).first()
+                    
+                    if chave_ocupada:
+                        mensagem_erro = f"Acesso negado: Esta chave já está com {chave_ocupada.usuario.nome}!"
+                        
+                    # 2. Verifica se ESSA chave já está como rascunho para ESSE usuário na tela atual
+                    elif Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO', chaves=chave_encontrada).exists():
+                        mensagem_erro = "Esta chave já foi adicionada na sua lista abaixo!"
+                        
+                    # Se passou nos testes, cria o empréstimo
+                    else:
+                        novo_emprestimo = Emprestimo.objects.create(
+                            usuario=usuario, 
+                            status=Emprestimo.Status.SOLICITADO
+                        )
+                        novo_emprestimo.chaves.add(chave_encontrada)
+                        
+                        return redirect('adicionar_chaves_emprestimo', id=usuario.id)
+
+                except Chave.DoesNotExist:
+                    mensagem_erro = "Chave não encontrada no sistema!"
+
+    # Busca todos os "rascunhos" que pertencem a esse usuário
+    emprestimos_em_andamento = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO')
+
+    contexto = {
+        'usuario': usuario,
+        'emprestimos_em_andamento': emprestimos_em_andamento,
+        'erro': mensagem_erro
+    }
+    return render(request, 'home/emprestimos/detalhes.html', contexto)
+
+def finalizar_emprestimo(request, id):
+    """
+    O 'id' que chega aqui é o ID do USUÁRIO.
+    Vamos pegar TODOS os rascunhos dele e transformar em NOVO (Confirmar tudo).
+    """
+    Emprestimo.objects.filter(usuario_id=id, status='SOLICITADO').update(status='NOVO')
+    return redirect('listar_emprestimos')
+
+def remover_emprestimo(request, id):
+    """ Botão de Cancelar: O 'id' é o do USUÁRIO. Apaga todos os rascunhos feitos agora. """
+    Emprestimo.objects.filter(usuario_id=id, status='SOLICITADO').delete()
+    return redirect('listar_emprestimos')
+
+def remover_chave_emprestimo(request, emprestimo_id, chave_id):
+    """ Tela de detalhes: Apaga a linha inteira daquela chave """
+    emprestimo = get_object_or_404(Emprestimo, id=emprestimo_id)
+    usuario_id = emprestimo.usuario.id
+    emprestimo.delete() # Como 1 chave = 1 empréstimo, apaga o empréstimo inteiro
+    return redirect('adicionar_chaves_emprestimo', id=usuario_id)
+
+
+# --- NOVAS VIEWS: DEVOLVER E REPASSAR ---
+
+def devolver_emprestimo(request, id):
+    try:
+        emprestimo = Emprestimo.objects.get(id=id)
+    except Emprestimo.DoesNotExist:
+        messages.error(request, 'Empréstimo não encontrado.')
+        return redirect('listar_emprestimos')
+
+    erro = None
+    if request.method == 'POST':
+        matricula_digitada = request.POST.get('matricula')
+        
+        # Verifica se a matrícula bate com a do dono atual da chave
+        if matricula_digitada == emprestimo.usuario.matricula:
+            emprestimo.status = Emprestimo.Status.DEVOLVIDO
+            emprestimo.save()
+            messages.success(request, 'Chave devolvida com sucesso!')
+            return redirect('listar_emprestimos')
+        else:
+            erro = "Matrícula incorreta. Apenas o responsável atual pode devolver."
+
+    return render(request, 'home/emprestimos/devolver.html', {'emprestimo': emprestimo, 'erro': erro})
+
+def repassar_emprestimo(request, id):
+    try:
+        emprestimo_atual = Emprestimo.objects.get(id=id)
+    except Emprestimo.DoesNotExist:
+        messages.error(request, 'Empréstimo não encontrado.')
+        return redirect('listar_emprestimos')
+
+    erro = None
+    if request.method == 'POST':
+        matricula_novo = request.POST.get('matricula')
+        try:
+            novo_usuario = Usuario.objects.get(matricula=matricula_novo)
+            
+            if novo_usuario == emprestimo_atual.usuario:
+                erro = "Você não pode repassar a chave para você mesmo!"
+            else:
+                # 1. Finaliza o registro do usuário atual
+                emprestimo_atual.status = Emprestimo.Status.DEVOLVIDO
+                emprestimo_atual.save()
+                
+                # 2. Cria um novo registro para a nova pessoa com status REPASSADO
+                novo_emprestimo = Emprestimo.objects.create(
+                    usuario=novo_usuario,
+                    status=Emprestimo.Status.REPASSADO
+                )
+                
+                # 3. Transfere as chaves para o novo registro
+                for chave in emprestimo_atual.chaves.all():
+                    novo_emprestimo.chaves.add(chave)
+                    
+                messages.success(request, f'Chave repassada para {novo_usuario.nome} com sucesso!')
+                return redirect('listar_emprestimos')
+                
+        except Usuario.DoesNotExist:
+            erro = "Usuário destino não encontrado com esta matrícula."
+
+    return render(request, 'home/emprestimos/repassar.html', {'emprestimo': emprestimo_atual, 'erro': erro})
+
+

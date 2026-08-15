@@ -35,12 +35,33 @@ class Chave(models.Model):
     
 
 class Emprestimo(models.Model):
-    # O Empréstimo une o Usuário, as Chaves e o momento (Data/Hora)
-    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
-    chaves = models.ManyToManyField(Chave)
+
+    class Status(models.TextChoices):
+        NOVO = 'NOVO', 'Novo'
+        SOLICITADO = 'SOLICITADO', 'Solicitado'
+        DEVOLVIDO = 'DEVOLVIDO', 'Devolvido'
+        REPASSADO = 'REPASSADO', 'Repassado'  
+
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.PROTECT,
+        related_name='emprestimos'
+    )
     
-    # default=timezone.now preenche a data e hora automaticamente no momento do registro
-    data_hora = models.DateTimeField(default=timezone.now)
+    chaves = models.ManyToManyField(Chave, related_name='emprestimos', blank=True)
+
+    data = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.NOVO
+    )
+
+    class Meta:
+        ordering = ['-data']
 
     def __str__(self):
-        return f"Empréstimo de {self.usuario.nome} em {self.data_hora.strftime('%d/%m/%Y %H:%M')}"
+        return f'Empréstimo #{self.id} - {self.usuario}'

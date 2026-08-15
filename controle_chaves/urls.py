@@ -19,8 +19,14 @@ urlpatterns = [
     path('chaves/editar/<int:id>/', views.editar_chave, name='editar_chave'),
     path("barcode/<int:id>/",views.gerar_codigo_barras,name="gerar_barcode"),
 
-    # --- ROTAS DE EMPRÉSTIMOS ---
-    path('emprestimos/', views.pagina_emprestimos, name='pagina_emprestimos'),
-    path('emprestimos/cadastrar/', views.salvar_emprestimo, name='salvar_emprestimo'),
-    
+   # --- ROTAS DE EMPRÉSTIMOS ---
+    path('emprestimos/', views.listar_emprestimos, name='listar_emprestimos'),
+    path('emprestimos/cadastrar/', views.cadastrar_emprestimo, name='cadastrar_emprestimo'),
+    path('emprestimos/detalhes/<int:id>/', views.adicionar_chaves_emprestimo, name='adicionar_chaves_emprestimo'), 
+    path('emprestimos/finalizar/<int:id>/', views.finalizar_emprestimo, name='finalizar_emprestimo'),   
+    path('emprestimos/remover-chave/<int:emprestimo_id>/<int:chave_id>/', views.remover_chave_emprestimo, name='remover_chave_emprestimo'),
+    path('emprestimos/remover/<int:id>/', views.remover_emprestimo, name='remover_emprestimo'),
+    # NOVAS ROTAS
+    path('emprestimos/devolver/<int:id>/', views.devolver_emprestimo, name='devolver_emprestimo'),
+    path('emprestimos/repassar/<int:id>/', views.repassar_emprestimo, name='repassar_emprestimo'),
 ]

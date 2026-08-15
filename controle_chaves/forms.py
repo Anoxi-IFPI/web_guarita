@@ -24,3 +24,27 @@ class ChaveForm(forms.ModelForm):
             'setor': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Bloco A / Sala 01'}),
             # 'disponivel': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+        
+
+
+class EmprestimoForm(forms.ModelForm):
+    # Criamos um campo customizado para receber a matrícula,
+    # já que a matrícula pertence ao Usuário e não diretamente ao Empréstimo.
+    matricula = forms.CharField(
+        label='Matrícula',
+        max_length=20,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'input-grande', 
+            'placeholder': 'Ex: 2023112lcom0011',
+            'autofocus': True,
+            'id': 'matricula-input'
+        })
+    )
+
+    class Meta:
+        model = Emprestimo
+        # O professor sugeriu colocar a matrícula nos fields. 
+        # Como não vamos preencher o 'status', a 'data' nem o 'usuario' 
+        # diretamente na tela (o sistema fará isso sozinho), deixamos apenas a matrícula.
+        fields = ['matricula']

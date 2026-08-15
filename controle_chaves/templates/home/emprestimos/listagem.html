@@ -1,0 +1,111 @@
+{% extends 'home/base.html' %}
+
+{% block titulo %} Empréstimos Realizados {% endblock %}
+
+{% block conteudo %}
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4 border-0">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: var(--ifpi-verde);">
+            <h5 class="m-0 font-weight-bold text-white"><i class="fas fa-clipboard-list me-2"></i> Registro de Empréstimos</h5>
+            <div>
+                <a href="{% url 'cadastrar_emprestimo' %}" class="btn btn-light text-success fw-bold btn-sm shadow-sm">
+                    <i class="fas fa-plus me-1"></i> Realizar Empréstimo
+                </a>
+                <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary btn-sm shadow-sm text-white">
+                    <i class="fas fa-sync-alt me-1"></i> Recarregar
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Setor (Chave)</th>
+                            <th>Usuário</th>
+                            <th>Matrícula</th>
+                            <th>Data e Hora</th>
+                            <th>Status</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 1º LOOP: Varre os empréstimos -->
+                        {% for item in lista %}
+                            
+                            <!-- 2º LOOP: Varre as chaves DENTRO do empréstimo para separar em linhas! -->
+                            {% for chave in item.chaves.all %}
+                            <tr>
+                                <td><strong>{{ item.id }}</strong></td>
+                                                                
+                                <td class="text-dark">{{ chave.nome }}</td>
+                                
+                                
+                                <td>{{ item.usuario.nome }}</td>
+                                <td>{{ item.usuario.matricula }}</td>
+                                <td>{{ item.data|date:"d/m/Y H:i" }}</td>
+                                
+                               <td>
+                                {% if item.status == 'NOVO' %}
+                                    <span class="badge bg-primary">Ativo</span>
+                                {% elif item.status == 'REPASSADO' %}
+                                    <span class="badge bg-info text-dark">Repassado</span>
+                                {% else %}
+                                    <span class="badge bg-success">Devolvido</span>
+                                {% endif %}
+                            </td>
+                                
+                               <!-- CÓDIGO DA TABELA SUBSTITUÍDO -->
+                                    <td class="text-center text-nowrap">
+                                        <!-- Botão Azul (Repassar) -->
+                                        <a href="{% url 'repassar_emprestimo' item.id %}" class="btn btn-primary btn-sm text-white shadow-sm" title="Repassar">
+                                            <i class="fas fa-exchange-alt"></i> Repassar
+                                        </a>
+                                        
+                                        <!-- Botão Verde (Devolver) -->
+                                        <a href="{% url 'devolver_emprestimo' item.id %}" class="btn btn-success btn-sm shadow-sm" title="Devolver">
+                                            <i class="fas fa-undo-alt"></i> Devolver
+                                        </a>
+                                    </td>
+                            {% empty %}
+                               <tr>
+                                    <td><strong>#{{ item.id }}</strong></td>
+                                    <td class="text-danger small">Sem chaves vinculadas</td>
+                                    <td>{{ item.usuario.nome }}</td>
+                                    <td>{{ item.usuario.matricula }}</td>
+                                    <td>{{ item.data|date:"d/m/Y H:i" }}</td>
+                                    <td><span class="badge bg-secondary">Vazio</span></td>
+                                    
+                                    <!-- BOTÕES PADRONIZADOS (Corrigido para manter o seu layout original) -->
+                                    <td class="text-center text-nowrap">
+                                        <a href="{% url 'adicionar_chaves_emprestimo' item.id %}" class="btn btn-primary btn-sm text-white shadow-sm" title="Detalhar">
+                                            <i class="fas fa-eye"></i> Detalhar
+                                        </a>
+                                        
+                                        <a href="#" class="btn btn-sm text-white shadow-sm" style="background-color: #495057;" title="Editar">
+                                            <i class="fas fa-edit me-1"></i> Editar
+                                        </a>
+                                        
+                                        <a href="{% url 'remover_emprestimo' item.id %}" class="btn btn-danger btn-sm shadow-sm" onclick="return confirm('Apagar este registro vazio?');" title="Remover">
+                                            <i class="fas fa-trash"></i> Remover
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                <i class="fas fa-info-circle fs-4 mb-2 d-block"></i> Nenhum empréstimo registrado.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "home/base.html" %}
+
+{% block titulo %}Repassar Chave{% endblock %}
+
+{% block conteudo %}
+<style>
+    .input-grande {
+        width: 100%; padding: 12px 20px; font-size: 1.8rem; font-weight: bold;
+        text-align: center; color: #333; border: 2px solid #ccc; 
+        border-radius: 8px; transition: all 0.3s ease; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        letter-spacing: 2px;
+    }
+    /* Alterado o brilho do input para o verde padrão */
+    .input-grande:focus {
+        border-color: var(--ifpi-verde, #28a745); box-shadow: 0 0 10px rgba(40, 167, 69, 0.3); outline: none;
+    }
+</style>
+
+<div class="container-fluid mt-2"> 
+    
+    <!-- Informações do dono atual -->
+    <div class="card shadow mb-4 border-0">
+        <div class="card-header text-white fw-bold py-3" style="background-color: var(--ifpi-verde);">
+            <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i> Repassar Chave</h5>
+        </div>
+        <div class="card-body p-4 bg-light">
+            <div class="row text-center text-md-start">
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <span class="text-muted d-block small">Chave / Local</span>
+                    <strong class="fs-5 text-success">{{ emprestimo.chaves.first.nome }} - {{ emprestimo.chaves.first.setor }}</strong>
+                </div>
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <span class="text-muted d-block small">Titular Atual</span>
+                    <strong class="fs-5">{{ emprestimo.usuario.nome }}</strong>
+                </div>
+                <div class="col-md-4">
+                    <span class="text-muted d-block small">Matrícula Atual</span>
+                    <strong class="fs-5">{{ emprestimo.usuario.matricula }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário do NOVO dono -->
+    <div class="card shadow mb-4 border-0">
+        <div class="card-body p-5 text-center">
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="mb-5 mt-2">
+                    <label class="form-label fw-bold fs-4 text-dark mb-4">
+                        Matrícula de quem vai <span class="text-success">RECEBER</span> a chave
+                    </label>
+                    <input type="text" name="matricula" class="input-grande" placeholder="Ex: 2023112lcom0011" autofocus required>
+                    
+                    {% if erro %}
+                        <div class="alert alert-danger mt-4 mb-0 py-2 d-inline-block fs-5">
+                            <i class="fas fa-exclamation-circle"></i> {{ erro }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <hr class="mt-5 mb-4">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary shadow-sm px-4 text-white btn-lg">
+                        <i class="fas fa-chevron-left me-2"></i> Voltar para Listagem
+                    </a>
+                    <button type="submit" class="btn btn-success px-5 shadow-sm btn-lg" style="background-color: var(--ifpi-verde-escuro);">
+                        Confirmar Repasse <i class="fas fa-check-circle ms-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock conteudo %}

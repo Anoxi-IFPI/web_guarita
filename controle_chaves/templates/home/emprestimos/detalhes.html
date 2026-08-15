@@ -1,0 +1,134 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block titulo %}Registro de Chaves{% endblock %}
+
+{% block conteudo %}
+<style>
+    .input-grande {
+        width: 100%; padding: 12px 20px; font-size: 1.8rem; font-weight: bold;
+        text-align: center; color: #333; border: 2px solid #ccc; 
+        border-radius: 8px; transition: all 0.3s ease; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        letter-spacing: 2px;
+    }
+    .input-grande:focus {
+        border-color: var(--ifpi-verde, #28a745); box-shadow: 0 0 10px rgba(40, 167, 69, 0.3); outline: none;
+    }
+</style>
+
+<div class="container-fluid mt-2"> 
+            
+    <div class="card shadow mb-4 border-0">
+        <div class="card-header text-white fw-bold py-3" style="background-color: var(--ifpi-verde);">
+            <h5 class="mb-0"><i class="fas fa-id-badge me-2"></i> Atendimento: {{ usuario.matricula }}</h5>
+        </div>
+        <div class="card-body p-4 bg-light">
+            <div class="row text-center text-md-start">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <span class="text-muted d-block small">Usuário</span>
+                    <strong class="fs-5">{{ usuario.nome }}</strong>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <span class="text-muted d-block small">Matrícula</span>
+                    <strong class="fs-5">{{ usuario.matricula }}</strong>
+                </div>
+                <div class="col-md-3">
+                    <span class="text-muted d-block small mb-1">Vínculo</span>
+                    <strong class="fs-5 text-uppercase">
+                        <span class="badge bg-primary rounded-pill px-3">{{ usuario.vinculo|default:"Aluno" }}</span>
+                    </strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4 border-0">
+        <div class="card-body p-4 text-center">
+            <form method="POST" action="">
+                {% csrf_token %}
+                <label for="codigo" class="form-label fw-bold fs-5 text-secondary mb-3">
+                    <i class="fas fa-barcode"></i> Leia ou digite o código da chave
+                </label>
+                
+                <div class="mb-5 mt-4">
+                    <input type="text" name="codigo" id="codigo" class="input-grande" placeholder="Código da Chave" autofocus autocomplete="off">
+                    
+                    {% if erro %}
+                        <div class="alert alert-danger mt-4 mb-0 py-2 d-inline-block fs-5">
+                            <i class="fas fa-exclamation-triangle"></i> {{ erro }}
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="submit" style="display: none;">Enviar</button> 
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4 border-0">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold text-secondary"><i class="fas fa-list me-2"></i> Chaves Registradas neste Empréstimo</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ID Empréstimo</th>
+                            <th>Nome da Chave</th>
+                            <th>Setor / Local</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Loop adaptado para mostrar os vários IDs novos criados -->
+                        {% for emp in emprestimos_em_andamento %}
+                            {% with chave=emp.chaves.first %}
+                            
+                            <!-- AQUI ESTÁ O ESCUDO: Só desenha a linha se a chave existir de verdade! -->
+                            {% if chave %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-secondary">#{{ emp.id }}</td>
+                                <td class="fw-bold">{{ chave.nome }}</td>
+                                <td>{{ chave.setor }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'remover_chave_emprestimo' emp.id chave.id %}" class="btn btn-sm btn-outline-danger" title="Remover">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            <!-- FIM DO ESCUDO -->
+
+                            {% endwith %}
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-info-circle fs-4 mb-2 d-block"></i> Aguardando leitura...
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white py-3 d-flex justify-content-end align-items-center">
+            <a href="{% url 'remover_emprestimo' usuario.id %}" class="btn btn-secondary px-4 me-3" onclick="return confirm('Deseja cancelar este empréstimo e descartar as chaves bipadas?');">
+                <i class="fas fa-times me-2"></i> Cancelar e Voltar
+            </a>
+            
+            {% if emprestimos_em_andamento.count > 0 %}
+                <a href="{% url 'finalizar_emprestimo' usuario.id %}" class="btn btn-success px-4" style="background-color: var(--ifpi-verde-escuro);">
+                    <i class="fas fa-check-circle me-2"></i> Finalizar Empréstimo
+                </a>
+            {% else %}
+                <button class="btn btn-success px-4 opacity-50" style="background-color: var(--ifpi-verde-escuro); cursor: not-allowed;" onclick="alert('Atenção: Adicione pelo menos uma chave com o leitor antes de finalizar o empréstimo!');">
+                    <i class="fas fa-check-circle me-2"></i> Finalizar Empréstimo
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'emprestimos/js/script.js' %}"></script>
+
+{% endblock conteudo %}
