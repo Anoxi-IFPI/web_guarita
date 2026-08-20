@@ -8,9 +8,20 @@
         <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: var(--ifpi-verde);">
             <h5 class="m-0 font-weight-bold text-white"><i class="fas fa-clipboard-list me-2"></i> Registro de Empréstimos</h5>
             <div>
+                <!-- Link corrigido para 'devolver_emprestimo' -->
+                <a href="{% url 'devolver_emprestimo' %}" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm me-1">
+                    <i class="fas fa-undo-alt me-1"></i> Devolver Chaves
+                </a>
+                
+                <!-- Coloquei '#' por enquanto, pois a rota de repasse em lote ainda não foi criada -->
+                <a href="#" class="btn btn-info text-dark fw-bold btn-sm shadow-sm me-1">
+                    <i class="fas fa-exchange-alt me-1"></i> Repassar Chaves
+                </a>
+                
                 <a href="{% url 'cadastrar_emprestimo' %}" class="btn btn-light text-success fw-bold btn-sm shadow-sm">
                     <i class="fas fa-plus me-1"></i> Realizar Empréstimo
                 </a>
+                
                 <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary btn-sm shadow-sm text-white">
                     <i class="fas fa-sync-alt me-1"></i> Recarregar
                 </a>
@@ -28,7 +39,7 @@
                             <th>Matrícula</th>
                             <th>Data e Hora</th>
                             <th>Status</th>
-                            <th class="text-center">Ações</th>
+                            <!-- Coluna 'Ações' removida para não desalinhar a tabela -->
                         </tr>
                     </thead>
                     <tbody>
@@ -39,65 +50,36 @@
                             {% for chave in item.chaves.all %}
                             <tr>
                                 <td><strong>{{ item.id }}</strong></td>
-                                                                
                                 <td class="text-dark">{{ chave.nome }}</td>
-                                
-                                
                                 <td>{{ item.usuario.nome }}</td>
                                 <td>{{ item.usuario.matricula }}</td>
                                 <td>{{ item.data|date:"d/m/Y H:i" }}</td>
-                                
-                               <td>
-                                {% if item.status == 'NOVO' %}
-                                    <span class="badge bg-primary">Ativo</span>
-                                {% elif item.status == 'REPASSADO' %}
-                                    <span class="badge bg-info text-dark">Repassado</span>
-                                {% else %}
-                                    <span class="badge bg-success">Devolvido</span>
-                                {% endif %}
-                            </td>
-                                
-                               <!-- CÓDIGO DA TABELA SUBSTITUÍDO -->
-                                    <td class="text-center text-nowrap">
-                                        <!-- Botão Azul (Repassar) -->
-                                        <a href="{% url 'repassar_emprestimo' item.id %}" class="btn btn-primary btn-sm text-white shadow-sm" title="Repassar">
-                                            <i class="fas fa-exchange-alt"></i> Repassar
-                                        </a>
-                                        
-                                        <!-- Botão Verde (Devolver) -->
-                                        <a href="{% url 'devolver_emprestimo' item.id %}" class="btn btn-success btn-sm shadow-sm" title="Devolver">
-                                            <i class="fas fa-undo-alt"></i> Devolver
-                                        </a>
-                                    </td>
+                                <td>
+                                    {% if item.status == 'NOVO' %}
+                                        <span class="badge bg-primary">Ativo</span>
+                                    {% elif item.status == 'REPASSADO' %}
+                                        <span class="badge bg-info text-dark">Repassado</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Devolvido</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
                             {% empty %}
-                               <tr>
-                                    <td><strong>#{{ item.id }}</strong></td>
-                                    <td class="text-danger small">Sem chaves vinculadas</td>
-                                    <td>{{ item.usuario.nome }}</td>
-                                    <td>{{ item.usuario.matricula }}</td>
-                                    <td>{{ item.data|date:"d/m/Y H:i" }}</td>
-                                    <td><span class="badge bg-secondary">Vazio</span></td>
-                                    
-                                    <!-- BOTÕES PADRONIZADOS (Corrigido para manter o seu layout original) -->
-                                    <td class="text-center text-nowrap">
-                                        <a href="{% url 'adicionar_chaves_emprestimo' item.id %}" class="btn btn-primary btn-sm text-white shadow-sm" title="Detalhar">
-                                            <i class="fas fa-eye"></i> Detalhar
-                                        </a>
-                                        
-                                        <a href="#" class="btn btn-sm text-white shadow-sm" style="background-color: #495057;" title="Editar">
-                                            <i class="fas fa-edit me-1"></i> Editar
-                                        </a>
-                                        
-                                        <a href="{% url 'remover_emprestimo' item.id %}" class="btn btn-danger btn-sm shadow-sm" onclick="return confirm('Apagar este registro vazio?');" title="Remover">
-                                            <i class="fas fa-trash"></i> Remover
-                                        </a>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td><strong>#{{ item.id }}</strong></td>
+                                <td class="text-danger small">Sem chaves vinculadas</td>
+                                <td>{{ item.usuario.nome }}</td>
+                                <td>{{ item.usuario.matricula }}</td>
+                                <td>{{ item.data|date:"d/m/Y H:i" }}</td>
+                                <td><span class="badge bg-secondary">Vazio</span></td>
+                                <!-- Botões de ações removidos daqui também -->
+                            </tr>
                             {% endfor %}
                             
                         {% empty %}
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">
+                            <!-- colspan alterado de 7 para 6 para acompanhar as colunas -->
+                            <td colspan="6" class="text-center py-4 text-muted">
                                 <i class="fas fa-info-circle fs-4 mb-2 d-block"></i> Nenhum empréstimo registrado.
                             </td>
                         </tr>

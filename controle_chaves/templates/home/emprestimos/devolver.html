@@ -1,6 +1,6 @@
 {% extends "home/base.html" %}
-
-{% block titulo %}Devolver Chave{% endblock %}
+{% load static %}
+{% block titulo %}Devolução de Chaves{% endblock %}
 
 {% block conteudo %}
 <style>
@@ -16,46 +16,45 @@
 </style>
 
 <div class="container-fluid mt-2"> 
-
-    <!-- Informações do dono atual -->
-    <div class="card shadow mb-4 border-0">
+    
+    <!-- Painel de Identificação (Inicia oculto até a primeira chave ser lida) -->
+    <div id="painel_usuario" class="card shadow mb-4 border-0 d-none">
         <div class="card-header py-3 text-white fw-bold" style="background-color: var(--ifpi-verde);">
-            <h5 class="m-0"><i class="fas fa-undo-alt me-2"></i> Confirmar Devolução</h5>
+            <h5 class="m-0"><i class="fas fa-user-check me-2"></i> Usuário Identificado</h5>
         </div>
         <div class="card-body p-4 bg-light">
             <div class="row text-center text-md-start">
-                <div class="col-md-4 mb-2 mb-md-0">
-                    <span class="text-muted d-block small">Chave / Local</span>
-                    <strong class="fs-5 text-success">{{ emprestimo.chaves.first.nome }} - {{ emprestimo.chaves.first.setor }}</strong>
-                </div>
-                <div class="col-md-4 mb-2 mb-md-0">
+                <div class="col-md-6 mb-2 mb-md-0">
                     <span class="text-muted d-block small">Titular Atual</span>
-                    <strong class="fs-5">{{ emprestimo.usuario.nome }}</strong>
+                    <strong class="fs-4" id="ui_usuario_nome">---</strong>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <span class="text-muted d-block small">Matrícula Atual</span>
-                    <strong class="fs-5">{{ emprestimo.usuario.matricula }}</strong>
+                    <strong class="fs-4 text-primary" id="ui_usuario_matricula">---</strong>
                 </div>
             </div>
         </div>
     </div>
         
-    <!-- Formulário de Devolução -->
+    <!-- Formulário e Leitura -->
     <div class="card shadow mb-4 border-0">
-        <div class="card-body p-5 text-center">
-            <form method="POST" action="">
+        <div class="card-body p-5">
+            <form method="POST" action="{% url 'devolver_emprestimo' %}" id="formDevolucao">
                 {% csrf_token %}
-                <div class="mb-5 mt-2">
+                
+                <div class="mb-5 mt-2 text-center">
                     <label class="form-label fw-bold fs-4 text-dark mb-4">
-                        Confirme a sua Matrícula para <span class="text-success">DEVOLVER</span>
+                        Passe a Chave no Leitor ou digite o código para <span class="text-success">DEVOLVER</span>
                     </label>
-                    <input type="text" name="matricula" class="input-grande" placeholder="Ex: 2023112lcom0011" autofocus required>
-                    
-                    {% if erro %}
-                        <div class="alert alert-danger mt-4 mb-0 py-2 d-inline-block fs-5">
-                            <i class="fas fa-exclamation-circle"></i> {{ erro }}
-                        </div>
-                    {% endif %}
+                    <input type="text" id="input_leitor" class="input-grande" placeholder="Aguardando leitura do código..." autofocus autocomplete="off">
+                </div>
+
+                <!-- Lista Visual das Chaves Bipadas -->
+                <div class="mb-5">
+                    <h5 class="fw-bold text-secondary mb-3">Lista de Devolução:</h5>
+                    <ul class="list-group" id="lista_chaves">
+                        <!-- As chaves lidas aparecerão aqui via JS -->
+                    </ul>
                 </div>
 
                 <hr class="mt-5 mb-4">
@@ -64,7 +63,7 @@
                     <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary shadow-sm px-4 text-white btn-lg">
                         <i class="fas fa-chevron-left me-2"></i> Voltar para Listagem
                     </a>
-                    <button type="submit" class="btn btn-success px-5 shadow-sm btn-lg" style="background-color: var(--ifpi-verde-escuro);">
+                    <button type="submit" class="btn btn-success px-5 shadow-sm btn-lg" style="background-color: var(--ifpi-verde-escuro);" id="btn_confirmar" disabled>
                         Confirmar Devolução <i class="fas fa-check-circle ms-2"></i>
                     </button>
                 </div>
@@ -72,4 +71,7 @@
         </div>
     </div>
 </div>
+
+<script src="{% static 'emprestimos/js/devolver.js' %}"></script> 
+
 {% endblock conteudo %}

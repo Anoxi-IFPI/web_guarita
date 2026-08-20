@@ -331,29 +331,67 @@ def remover_chave_emprestimo(request, emprestimo_id, chave_id):
     return redirect('adicionar_chaves_emprestimo', id=usuario_id)
 
 
-# --- NOVAS VIEWS: DEVOLVER E REPASSAR ---
+# ==========================================
+# VIEWS PARA NOVA DEVOLUÇÃO EM LOTE/BIPAGEM
+# ==========================================
 
-def devolver_emprestimo(request, id):
+def api_buscar_chave_devolucao(request):
+    codigo = request.GET.get('codigo', '').strip()
+
+    if not codigo:
+        return JsonResponse({'erro': 'Nenhum código lido.'}, status=400)
+
+    # Como o código de barras gerado é o ID da chave, buscamos por chaves__id
     try:
-        emprestimo = Emprestimo.objects.get(id=id)
-    except Emprestimo.DoesNotExist:
-        messages.error(request, 'Empréstimo não encontrado.')
+        emprestimo = Emprestimo.objects.filter( 
+            chaves__id=codigo,
+            status__in=[Emprestimo.Status.NOVO, Emprestimo.Status.REPASSADO]
+        ).first()
+
+        if not emprestimo:
+            return JsonResponse({'erro': 'Chave não encontrada ou não está emprestada.'}, status=404)
+
+        # Como 1 empréstimo = 1 chave, pegamos a primeira
+        chave = emprestimo.chaves.first()
+
+        return JsonResponse({
+            'chave_id': chave.id,
+            'chave_nome': chave.nome,
+            'usuario_id': emprestimo.usuario.id,
+            'usuario_nome': emprestimo.usuario.nome,
+            'usuario_matricula': emprestimo.usuario.matricula
+        })
+    except ValueError:
+        return JsonResponse({'erro': 'Código de barras inválido.'}, status=400)
+
+
+def devolver_emprestimo(request):
+    if request.method == 'POST':
+        # Recebe a lista de IDs de chaves que foram bipadas na tela
+        chaves_ids = request.POST.getlist('chaves_ids[]')
+
+        if not chaves_ids:
+            messages.error(request, 'Nenhuma chave foi adicionada para devolução.')
+            return redirect('devolver_emprestimo')
+
+        # Busca os empréstimos individuais correspondentes a essas chaves
+        emprestimos = Emprestimo.objects.filter(
+            chaves__id__in=chaves_ids,
+            status__in=[Emprestimo.Status.NOVO, Emprestimo.Status.REPASSADO]
+        )
+
+        # Atualiza o status de cada um diretamente para DEVOLVIDO
+        for emp in emprestimos:
+            emp.status = Emprestimo.Status.DEVOLVIDO
+            emp.save()
+
+        messages.success(request, f'{len(chaves_ids)} chave(s) devolvida(s) com sucesso!')
         return redirect('listar_emprestimos')
 
-    erro = None
-    if request.method == 'POST':
-        matricula_digitada = request.POST.get('matricula')
-        
-        # Verifica se a matrícula bate com a do dono atual da chave
-        if matricula_digitada == emprestimo.usuario.matricula:
-            emprestimo.status = Emprestimo.Status.DEVOLVIDO
-            emprestimo.save()
-            messages.success(request, 'Chave devolvida com sucesso!')
-            return redirect('listar_emprestimos')
-        else:
-            erro = "Matrícula incorreta. Apenas o responsável atual pode devolver."
+    # Se for GET, apenas renderiza a página de bipagem
+    return render(request, 'home/emprestimos/devolver.html')
 
-    return render(request, 'home/emprestimos/devolver.html', {'emprestimo': emprestimo, 'erro': erro})
+
 
 def repassar_emprestimo(request, id):
     try:
