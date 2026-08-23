@@ -23,11 +23,12 @@ urlpatterns = [
     path('emprestimos/', views.listar_emprestimos, name='listar_emprestimos'),
     path('emprestimos/cadastrar/', views.cadastrar_emprestimo, name='cadastrar_emprestimo'),
     path('emprestimos/detalhes/<int:id>/', views.adicionar_chaves_emprestimo, name='adicionar_chaves_emprestimo'), 
+    path('api/adicionar-chave-emprestimo/', views.api_adicionar_chave_emprestimo, name='api_adicionar_chave_emprestimo'),
     path('emprestimos/finalizar/<int:id>/', views.finalizar_emprestimo, name='finalizar_emprestimo'),   
     path('emprestimos/remover-chave/<int:emprestimo_id>/<int:chave_id>/', views.remover_chave_emprestimo, name='remover_chave_emprestimo'),
     path('emprestimos/remover/<int:id>/', views.remover_emprestimo, name='remover_emprestimo'),
     # NOVAS ROTAS
     path('api/buscar-chave-devolucao/', views.api_buscar_chave_devolucao, name='api_buscar_chave_devolucao'),
     path('emprestimos/devolver/', views.devolver_emprestimo, name='devolver_emprestimo'),
-    path('emprestimos/repassar/<int:id>/', views.repassar_emprestimo, name='repassar_emprestimo'),
+    # path('emprestimos/repassar/<int:id>/', views.repassar_emprestimo, name='repassar_emprestimo'),
 ]

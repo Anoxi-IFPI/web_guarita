@@ -17,6 +17,8 @@
 </style>
 
 <div class="container-fluid mt-2"> 
+    <!-- ID escondido para o JS saber quem é o usuário -->
+    <input type="hidden" id="hidden_usuario_id" value="{{ usuario.id }}">
             
     <div class="card shadow mb-4 border-0">
         <div class="card-header text-white fw-bold py-3" style="background-color: var(--ifpi-verde);">
@@ -42,25 +44,38 @@
         </div>
     </div>
 
+    <!-- Leitor -->
     <div class="card shadow mb-4 border-0">
         <div class="card-body p-4 text-center">
-            <form method="POST" action="">
+            <!-- Formulário para o Plano B (Botão) -->
+            <form method="POST" action="{% url 'adicionar_chaves_emprestimo' usuario.id %}" id="formAdicionarChave">
                 {% csrf_token %}
                 <label for="codigo" class="form-label fw-bold fs-5 text-secondary mb-3">
-                    <i class="fas fa-barcode"></i> Leia ou digite o código da chave
+                    <i class="fas fa-barcode"></i> Leia a chave ou digite o código para EMPRESTAR
                 </label>
                 
                 <div class="mb-5 mt-4">
-                    <input type="text" name="codigo" id="codigo" class="input-grande" placeholder="Código da Chave" autofocus autocomplete="off">
-                    
+                    <input type="text" name="codigo" id="input_leitor" class="input-grande" placeholder="Aguardando leitura do código..." autofocus autocomplete="off">
+                    <div id="alerta_container" class="mt-4"></div>
+                    <!-- NOTIFICAÇÃO DE ERRO (Que você já tem) -->
                     {% if erro %}
                         <div class="alert alert-danger mt-4 mb-0 py-2 d-inline-block fs-5">
                             <i class="fas fa-exclamation-triangle"></i> {{ erro }}
                         </div>
                     {% endif %}
+
+                    {% comment %} <!-- NOTIFICAÇÃO DE SUCESSO (Adicione este bloco) -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-success mt-4 mb-0 py-2 d-inline-block fs-5">
+                                <i class="fas fa-check-circle"></i> {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %} {% endcomment %}
                 </div>
-                <button type="submit" style="display: none;">Enviar</button> 
-            </form>
+
+                <!-- IMPORTANTE: O botão 'Finalizar' que era seu plano B ficará invisível no JS caso tudo dê certo, mas no HTML ele fica visível (ou escondido com 'd-none') de acordo com sua preferência. Para seguir sua instrução de deixá-lo ali, ele virá no bloco inferior. -->
+            
         </div>
     </div>
 
@@ -70,26 +85,28 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0" id="tabela_chaves">
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4">ID Empréstimo</th>
+                            <th>Id_chave</th>
                             <th>Nome da Chave</th>
                             <th>Setor / Local</th>
+                            <th>Status</th>
                             <th class="text-center">Ações</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Loop adaptado para mostrar os vários IDs novos criados -->
+                    <tbody id="tbody_chaves">
+                        <!-- O Django carrega o que já tá no banco se a página for atualizada (status 'NOVO' na visão que envia do backend se necessário, ou pegando 'SOLICITADO' se você manteve a view original sem mudar) -->
                         {% for emp in emprestimos_em_andamento %}
                             {% with chave=emp.chaves.first %}
-                            
-                            <!-- AQUI ESTÁ O ESCUDO: Só desenha a linha se a chave existir de verdade! -->
                             {% if chave %}
                             <tr>
                                 <td class="ps-4 fw-bold text-secondary">#{{ emp.id }}</td>
+                                <td>{{ chave.id|stringformat:"02d" }}</td>
                                 <td class="fw-bold">{{ chave.nome }}</td>
                                 <td>{{ chave.setor }}</td>
+                                <td><span class="badge bg-primary">Ativa</span></td>
                                 <td class="text-center">
                                     <a href="{% url 'remover_chave_emprestimo' emp.id chave.id %}" class="btn btn-sm btn-outline-danger" title="Remover">
                                         <i class="fas fa-trash-alt"></i>
@@ -97,12 +114,10 @@
                                 </td>
                             </tr>
                             {% endif %}
-                            <!-- FIM DO ESCUDO -->
-
                             {% endwith %}
                         {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center py-5 text-muted">
+                        <tr id="linha_vazia">
+                            <td colspan="5" class="text-center py-6 text-muted">
                                 <i class="fas fa-info-circle fs-4 mb-2 d-block"></i> Aguardando leitura...
                             </td>
                         </tr>
@@ -111,24 +126,30 @@
                 </table>
             </div>
         </div>
-        <div class="card-footer bg-white py-3 d-flex justify-content-end align-items-center">
-            <a href="{% url 'remover_emprestimo' usuario.id %}" class="btn btn-secondary px-4 me-3" onclick="return confirm('Deseja cancelar este empréstimo e descartar as chaves bipadas?');">
-                <i class="fas fa-times me-2"></i> Cancelar e Voltar
+        
+        <div class="card-footer bg-white py-3 d-flex justify-content-between align-items-center">
+            
+            <!-- SEU BOTÃO IDÊNTICO AO DA DEVOLUÇÃO -->
+            <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary shadow-sm px-4 text-white btn-lg">
+                <i class="fas fa-chevron-left me-2"></i> Voltar para Listagem
             </a>
             
-            {% if emprestimos_em_andamento.count > 0 %}
-                <a href="{% url 'finalizar_emprestimo' usuario.id %}" class="btn btn-success px-4" style="background-color: var(--ifpi-verde-escuro);">
-                    <i class="fas fa-check-circle me-2"></i> Finalizar Empréstimo
+            <div>
+                <!-- Botão CANCELAR (mantido) -->
+                <a href="{% url 'remover_emprestimo' usuario.id %}" class="btn btn-danger px-4 me-3 btn-lg shadow-sm" onclick="return confirm('Deseja cancelar este empréstimo e descartar as chaves bipadas?');">
+                    <i class="fas fa-times me-2"></i> Cancelar Empréstimo
                 </a>
-            {% else %}
-                <button class="btn btn-success px-4 opacity-50" style="background-color: var(--ifpi-verde-escuro); cursor: not-allowed;" onclick="alert('Atenção: Adicione pelo menos uma chave com o leitor antes de finalizar o empréstimo!');">
-                    <i class="fas fa-check-circle me-2"></i> Finalizar Empréstimo
+                
+                <!-- Botão FINALIZAR (Plano B) -->
+                <button type="submit" id="btn_finalizar" class="btn btn-success px-4 btn-lg shadow-sm" style="background-color: var(--ifpi-verde-escuro);">
+                    Confirmar Empréstimo <i class="fas fa-check-circle ms-2"></i>
                 </button>
-            {% endif %}
+            </div>
+            
+            </form> <!-- O fechamento do form tem que ficar aqui depois do botão de confirmar -->
         </div>
     </div>
 </div>
 
-<script src="{% static 'emprestimos/js/script.js' %}"></script> 
-
+<script src="{% static 'emprestimos/js/script.js' %}?v=3"></script> 
 {% endblock conteudo %}

@@ -46,14 +46,15 @@
                     <label class="form-label fw-bold fs-4 text-dark mb-4">
                         Passe a Chave no Leitor ou digite o código para <span class="text-success">DEVOLVER</span>
                     </label>
-                    <input type="text" id="input_leitor" class="input-grande" placeholder="Aguardando leitura do código..." autofocus autocomplete="off">
+                    <!-- Importante: manter name="codigo" para o plano B -->
+                    <input type="text" name="codigo" id="input_leitor" class="input-grande" placeholder="Aguardando leitura do código..." autofocus autocomplete="off">
+                    <div id="alerta_container" class="mt-4"></div>
                 </div>
 
-                <!-- Lista Visual das Chaves Bipadas -->
                 <div class="mb-5">
-                    <h5 class="fw-bold text-secondary mb-3">Lista de Devolução:</h5>
+                    <h5 class="fw-bold text-secondary mb-3">Resumo das Chaves Devolvidas:</h5>
                     <ul class="list-group" id="lista_chaves">
-                        <!-- As chaves lidas aparecerão aqui via JS -->
+                        <!-- As chaves devolvidas vão aparecer aqui com o status "Devolvida" -->
                     </ul>
                 </div>
 
@@ -63,7 +64,9 @@
                     <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary shadow-sm px-4 text-white btn-lg">
                         <i class="fas fa-chevron-left me-2"></i> Voltar para Listagem
                     </a>
-                    <button type="submit" class="btn btn-success px-5 shadow-sm btn-lg" style="background-color: var(--ifpi-verde-escuro);" id="btn_confirmar" disabled>
+                    
+                    <!-- O botão atua como segunda opção -->
+                    <button type="submit" class="btn btn-success px-5 shadow-sm btn-lg" style="background-color: var(--ifpi-verde-escuro);" id="btn_confirmar">
                         Confirmar Devolução <i class="fas fa-check-circle ms-2"></i>
                     </button>
                 </div>
@@ -72,6 +75,5 @@
     </div>
 </div>
 
-<script src="{% static 'emprestimos/js/devolver.js' %}"></script> 
-
+<script src="{% static 'emprestimos/js/devolver.js' %}?v=2"></script>
 {% endblock conteudo %}

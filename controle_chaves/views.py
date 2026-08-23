@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.shortcuts import get_object_or_404, render, HttpResponse, redirect
+from django.utils import timezone
 from .models import Chave, Usuario, Emprestimo
 from .forms import EmprestimoForm, UsuarioForm, ChaveForm # <--- Adicionamos o ChaveForm aqui
 from django.contrib import messages  # <--- Faltava esta importação!
@@ -234,6 +237,7 @@ def gerar_codigo_barras(request, id):
     return render(
         request, "home/cod_barras/codigo_barras.html", contexto
     )
+    
 # ==========================================
 # VIEWS PARA GESTÃO DE EMPRÉSTIMOS (Lógica de 1 Chave = 1 Empréstimo Sequencial)
 # ========================================== 
@@ -265,51 +269,89 @@ def adicionar_chaves_emprestimo(request, id):
     # ATENÇÃO: Agora 'id' é o ID do Usuário, não do empréstimo!
     usuario = get_object_or_404(Usuario, id=id)
     mensagem_erro = None
+    
+    # Criamos uma lista vazia. Assim a tabela não carrega chaves que ele pegou horas atrás!
+    emprestimos_sessao = []
 
+    # PLANO B: Se o JavaScript falhar e o usuário clicar em "Confirmar Empréstimo"
     if request.method == 'POST':
         codigo_digitado = request.POST.get('codigo')
         if codigo_digitado:
-            # Mantém a correção para evitar erro com texto ao invés de número
             if not codigo_digitado.isdigit():
                 mensagem_erro = "Erro: Digite apenas números no código da chave!"
             else:
                 try:
                     chave_encontrada = Chave.objects.get(id=codigo_digitado)
                     
-                    # --- NOVA REGRA DE SEGURANÇA ---
                     # 1. Verifica se a chave JÁ ESTÁ EMPRESTADA para alguém no momento
                     chave_ocupada = Emprestimo.objects.filter(chaves=chave_encontrada, status__in=['NOVO', 'REPASSADO']).first()
                     
                     if chave_ocupada:
                         mensagem_erro = f"Acesso negado: Esta chave já está com {chave_ocupada.usuario.nome}!"
-                        
-                    # 2. Verifica se ESSA chave já está como rascunho para ESSE usuário na tela atual
-                    elif Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO', chaves=chave_encontrada).exists():
-                        mensagem_erro = "Esta chave já foi adicionada na sua lista abaixo!"
-                        
-                    # Se passou nos testes, cria o empréstimo
                     else:
+                        # 2. Se passou, já cria o empréstimo direto como ATIVO (NOVO)
                         novo_emprestimo = Emprestimo.objects.create(
                             usuario=usuario, 
-                            status=Emprestimo.Status.SOLICITADO
+                            status=Emprestimo.Status.NOVO
                         )
                         novo_emprestimo.chaves.add(chave_encontrada)
+                        messages.success(request, f"Chave {chave_encontrada.nome} emprestada com sucesso!")
                         
-                        return redirect('adicionar_chaves_emprestimo', id=usuario.id)
+                        # Coloca só a chave que acabou de ser digitada na lista
+                        emprestimos_sessao.append(novo_emprestimo)
 
                 except Chave.DoesNotExist:
                     mensagem_erro = "Chave não encontrada no sistema!"
 
-    # Busca todos os "rascunhos" que pertencem a esse usuário
-    emprestimos_em_andamento = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO')
-
     contexto = {
         'usuario': usuario,
-        'emprestimos_em_andamento': emprestimos_em_andamento,
+        'emprestimos_em_andamento': emprestimos_sessao, # <-- Aqui está o segredo: começa limpo!
         'erro': mensagem_erro
     }
     return render(request, 'home/emprestimos/detalhes.html', contexto)
 
+def api_adicionar_chave_emprestimo(request):
+    codigo = request.GET.get('codigo', '').strip()
+    usuario_id = request.GET.get('usuario_id', '').strip()
+
+    # Corrigido de 4000 para 400
+    if not codigo or not usuario_id:
+        return JsonResponse({'erro': 'Código ausente.'}, status=400)
+
+    # TRAVA CONTRA TEXTOS: Verifica se o código contém apenas números
+    if not codigo.isdigit():
+        return JsonResponse({'erro': 'Erro: Código inválido. O leitor deve enviar apenas números!'}, status=200)
+
+    try:
+        usuario = get_object_or_404(Usuario, id=usuario_id)
+        chave_encontrada = get_object_or_404(Chave, id=codigo)
+
+        # REGRA ABSOLUTA DE BLOQUEIO PARA A API
+        chave_ativa = Emprestimo.objects.filter(chaves=chave_encontrada, status__in=['NOVO', 'REPASSADO']).first()
+        if chave_ativa:
+            # Corrigido de 2000 para 200
+            return JsonResponse({'erro': f'Acesso negado: Chave já está com {chave_ativa.usuario.nome}!'}, status=200)
+
+        # Chave livre! Salva o empréstimo como ativo (NOVO)
+        novo_emprestimo = Emprestimo.objects.create(
+            usuario=usuario, 
+            status=Emprestimo.Status.NOVO
+        )
+        novo_emprestimo.chaves.add(chave_encontrada)
+
+        return JsonResponse({
+            'sucesso': True,
+            'emprestimo_id': novo_emprestimo.id,
+            'chave_id': chave_encontrada.id,
+            'chave_nome': chave_encontrada.nome,
+            'chave_setor': chave_encontrada.setor
+        })
+
+    except Chave.DoesNotExist:
+        # Corrigido de 2000 para 200
+        return JsonResponse({'erro': 'Chave não encontrada!'}, status=200)
+    
+    
 def finalizar_emprestimo(request, id):
     """
     O 'id' que chega aqui é o ID do USUÁRIO.
@@ -319,8 +361,15 @@ def finalizar_emprestimo(request, id):
     return redirect('listar_emprestimos')
 
 def remover_emprestimo(request, id):
-    """ Botão de Cancelar: O 'id' é o do USUÁRIO. Apaga todos os rascunhos feitos agora. """
-    Emprestimo.objects.filter(usuario_id=id, status='SOLICITADO').delete()
+    """ 
+    Botão de Cancelar: O 'id' é o do USUÁRIO. 
+    Apaga todos os empréstimos ATIVOS (NOVO) que ele fez na sessão atual (últimos 30 minutos). 
+    """
+    limite_tempo = timezone.now() - timedelta(minutes=30)
+    
+    # Filtra e deleta as chaves que ele acabou de bipar
+    Emprestimo.objects.filter(usuario_id=id, status='NOVO', data__gte=limite_tempo).delete()
+    
     return redirect('listar_emprestimos')
 
 def remover_chave_emprestimo(request, emprestimo_id, chave_id):
@@ -332,7 +381,7 @@ def remover_chave_emprestimo(request, emprestimo_id, chave_id):
 
 
 # ==========================================
-# VIEWS PARA NOVA DEVOLUÇÃO EM LOTE/BIPAGEM
+# VIEWS PARA NOVA DEVOLUÇÃO INSTANTÂNEA
 # ==========================================
 
 def api_buscar_chave_devolucao(request):
@@ -341,94 +390,96 @@ def api_buscar_chave_devolucao(request):
     if not codigo:
         return JsonResponse({'erro': 'Nenhum código lido.'}, status=400)
 
-    # Como o código de barras gerado é o ID da chave, buscamos por chaves__id
-    try:
-        emprestimo = Emprestimo.objects.filter( 
+    # 1. Busca o empréstimo ativo
+    emprestimo = Emprestimo.objects.filter( 
+        chaves__id=codigo,
+        status__in=[Emprestimo.Status.NOVO, Emprestimo.Status.REPASSADO]
+    ).first()
+
+    if not emprestimo:
+        return JsonResponse({'erro': 'Chave não encontrada ou não está emprestada.'}, status=404)
+
+    # 2. DEVOLUÇÃO INSTANTÂNEA: Atualiza o banco na mesma hora
+    emprestimo.status = Emprestimo.Status.DEVOLVIDO
+    emprestimo.save()
+
+    chave = emprestimo.chaves.first()
+
+    # 3. Retorna os dados para a tela mostrar o card
+    return JsonResponse({
+        'sucesso': True,
+        'chave_id': chave.id,
+        'chave_nome': chave.nome,
+        'usuario_id': emprestimo.usuario.id,
+        'usuario_nome': emprestimo.usuario.nome,
+        'usuario_matricula': emprestimo.usuario.matricula
+    })
+
+def devolver_emprestimo(request):
+    # Plano B: Se o usuário precisou usar o botão "Confirmar Devolução"
+    if request.method == 'POST':
+        codigo = request.POST.get('codigo', '').strip()
+
+        if not codigo:
+            messages.error(request, 'Nenhum código foi lido ou digitado.')
+            return redirect('devolver_emprestimo')
+
+        # Busca direta no banco, sem utilizar atalhos embutidos
+        emprestimo = Emprestimo.objects.filter(
             chaves__id=codigo,
             status__in=[Emprestimo.Status.NOVO, Emprestimo.Status.REPASSADO]
         ).first()
 
-        if not emprestimo:
-            return JsonResponse({'erro': 'Chave não encontrada ou não está emprestada.'}, status=404)
+        if emprestimo:
+            emprestimo.status = Emprestimo.Status.DEVOLVIDO
+            emprestimo.save()
+            messages.success(request, f'Chave {emprestimo.chaves.first().nome} devolvida com sucesso pelo modo manual!')
+        else:
+            messages.error(request, 'Chave não encontrada ou já devolvida.')
+            
+        return redirect('devolver_emprestimo')
 
-        # Como 1 empréstimo = 1 chave, pegamos a primeira
-        chave = emprestimo.chaves.first()
-
-        return JsonResponse({
-            'chave_id': chave.id,
-            'chave_nome': chave.nome,
-            'usuario_id': emprestimo.usuario.id,
-            'usuario_nome': emprestimo.usuario.nome,
-            'usuario_matricula': emprestimo.usuario.matricula
-        })
-    except ValueError:
-        return JsonResponse({'erro': 'Código de barras inválido.'}, status=400)
-
-
-def devolver_emprestimo(request):
-    if request.method == 'POST':
-        # Recebe a lista de IDs de chaves que foram bipadas na tela
-        chaves_ids = request.POST.getlist('chaves_ids[]')
-
-        if not chaves_ids:
-            messages.error(request, 'Nenhuma chave foi adicionada para devolução.')
-            return redirect('devolver_emprestimo')
-
-        # Busca os empréstimos individuais correspondentes a essas chaves
-        emprestimos = Emprestimo.objects.filter(
-            chaves__id__in=chaves_ids,
-            status__in=[Emprestimo.Status.NOVO, Emprestimo.Status.REPASSADO]
-        )
-
-        # Atualiza o status de cada um diretamente para DEVOLVIDO
-        for emp in emprestimos:
-            emp.status = Emprestimo.Status.DEVOLVIDO
-            emp.save()
-
-        messages.success(request, f'{len(chaves_ids)} chave(s) devolvida(s) com sucesso!')
-        return redirect('listar_emprestimos')
-
-    # Se for GET, apenas renderiza a página de bipagem
+    # Acesso normal à página (GET)
     return render(request, 'home/emprestimos/devolver.html')
 
 
 
-def repassar_emprestimo(request, id):
-    try:
-        emprestimo_atual = Emprestimo.objects.get(id=id)
-    except Emprestimo.DoesNotExist:
-        messages.error(request, 'Empréstimo não encontrado.')
-        return redirect('listar_emprestimos')
+# def repassar_emprestimo(request, id):
+#     try:
+#         emprestimo_atual = Emprestimo.objects.get(id=id)
+#     except Emprestimo.DoesNotExist:
+#         messages.error(request, 'Empréstimo não encontrado.')
+#         return redirect('listar_emprestimos')
 
-    erro = None
-    if request.method == 'POST':
-        matricula_novo = request.POST.get('matricula')
-        try:
-            novo_usuario = Usuario.objects.get(matricula=matricula_novo)
+#     erro = None
+#     if request.method == 'POST':
+#         matricula_novo = request.POST.get('matricula')
+#         try:
+#             novo_usuario = Usuario.objects.get(matricula=matricula_novo)
             
-            if novo_usuario == emprestimo_atual.usuario:
-                erro = "Você não pode repassar a chave para você mesmo!"
-            else:
-                # 1. Finaliza o registro do usuário atual
-                emprestimo_atual.status = Emprestimo.Status.DEVOLVIDO
-                emprestimo_atual.save()
+#             if novo_usuario == emprestimo_atual.usuario:
+#                 erro = "Você não pode repassar a chave para você mesmo!"
+#             else:
+#                 # 1. Finaliza o registro do usuário atual
+#                 emprestimo_atual.status = Emprestimo.Status.DEVOLVIDO
+#                 emprestimo_atual.save()
                 
-                # 2. Cria um novo registro para a nova pessoa com status REPASSADO
-                novo_emprestimo = Emprestimo.objects.create(
-                    usuario=novo_usuario,
-                    status=Emprestimo.Status.REPASSADO
-                )
+#                 # 2. Cria um novo registro para a nova pessoa com status REPASSADO
+#                 novo_emprestimo = Emprestimo.objects.create(
+#                     usuario=novo_usuario,
+#                     status=Emprestimo.Status.REPASSADO
+#                 )
                 
-                # 3. Transfere as chaves para o novo registro
-                for chave in emprestimo_atual.chaves.all():
-                    novo_emprestimo.chaves.add(chave)
+#                 # 3. Transfere as chaves para o novo registro
+#                 for chave in emprestimo_atual.chaves.all():
+#                     novo_emprestimo.chaves.add(chave)
                     
-                messages.success(request, f'Chave repassada para {novo_usuario.nome} com sucesso!')
-                return redirect('listar_emprestimos')
+#                 messages.success(request, f'Chave repassada para {novo_usuario.nome} com sucesso!')
+#                 return redirect('listar_emprestimos')
                 
-        except Usuario.DoesNotExist:
-            erro = "Usuário destino não encontrado com esta matrícula."
+#         except Usuario.DoesNotExist:
+#             erro = "Usuário destino não encontrado com esta matrícula."
 
-    return render(request, 'home/emprestimos/repassar.html', {'emprestimo': emprestimo_atual, 'erro': erro})
+#     return render(request, 'home/emprestimos/repassar.html', {'emprestimo': emprestimo_atual, 'erro': erro})
 
 
