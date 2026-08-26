@@ -1,11 +1,9 @@
 let debounceTimer;
-const inputLeitor = document.getElementById('input_leitor');
-const tbodyChaves = document.getElementById('tbody_chaves');
-const alertaContainer = document.getElementById('alerta_container');
-const btnAdicionarManual = document.getElementById('btn_adicionar_manual');
-const usuarioId = document.getElementById('hidden_usuario_id').value;
 
 function mostrarAlerta(mensagem, tipo) {
+    const alertaContainer = document.getElementById('alerta_container');
+    if(!alertaContainer) return;
+    
     alertaContainer.innerHTML = `
         <div class="alert alert-${tipo} alert-dismissible fade show fs-5 shadow-sm" role="alert">
             <i class="fas ${tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} me-2"></i>
@@ -17,9 +15,14 @@ function mostrarAlerta(mensagem, tipo) {
 }
 
 function adicionarChave(codigo) {
-    if (codigo === '') return;
+    const inputLeitor = document.getElementById('input_leitor');
+    const tbodyChaves = document.getElementById('tbody_chaves');
+    const elementoId = document.getElementById('hidden_usuario_id');
+    const usuarioId = elementoId ? elementoId.value : null;
 
-    inputLeitor.value = 'Buscando chave...';
+    if (codigo === '' || !usuarioId) return;
+
+    inputLeitor.value = 'Processando...';
     inputLeitor.disabled = true;
 
     fetch(`/api/adicionar-chave-emprestimo/?codigo=${codigo}&usuario_id=${usuarioId}`)
@@ -29,14 +32,12 @@ function adicionarChave(codigo) {
         inputLeitor.disabled = false;
         inputLeitor.focus();
 
-        // 🛑 TRAVA DE SEGURANÇA: Se a chave estiver ocupada, para aqui e não lista!
         if (data.erro) {
             mostrarAlerta(data.erro, 'danger');
             return; 
         }
 
-        // Se passar da trava, a chave tá livre, mostra verde e desenha a linha.
-        mostrarAlerta(`Chave ${data.chave_nome} ativa!`, 'success');
+        mostrarAlerta(`Chave ${data.chave_nome} ativada com sucesso!`, 'success');
 
         const linhaVazia = document.getElementById('linha_vazia');
         if (linhaVazia) linhaVazia.remove();
@@ -44,10 +45,7 @@ function adicionarChave(codigo) {
         let tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="ps-4 fw-bold text-secondary">#${data.emprestimo_id}</td>
-            
-            <!-- NOVA COLUNA INSERIDA AQUI PARA NÃO DESALINHAR A TABELA -->
             <td>${String(data.chave_id).padStart(2, '0')}</td>
-            
             <td class="fw-bold">${data.chave_nome}</td>
             <td>${data.chave_setor}</td>
             <td><span class="badge bg-primary">Ativa</span></td>
@@ -63,39 +61,69 @@ function adicionarChave(codigo) {
     .catch(error => {
         console.error('Erro:', error);
         mostrarAlerta("Falha no registro. Tente novamente.", 'warning');
-        if(btnAdicionarManual) btnAdicionarManual.classList.remove('d-none');
-        inputLeitor.value = codigo;
+        inputLeitor.value = '';
         inputLeitor.disabled = false;
         inputLeitor.focus();
     });
 }
 
-inputLeitor.addEventListener('input', function() {
-    clearTimeout(debounceTimer);
-    let codigo = this.value.trim();
-    if (codigo !== '' && codigo !== 'Buscando chave...') {
-        debounceTimer = setTimeout(function() {
-            adicionarChave(codigo);
-        }, 300);
+window.abrirModalFinalizar = function() {
+    const tbody = document.getElementById('tbody_chaves');
+    const linhas = tbody.querySelectorAll('tr:not(#linha_vazia)').length;
+    
+    if (linhas > 0) {
+        document.getElementById('qtdModal').innerText = linhas;
+        
+        const modalElement = document.getElementById('modalConfirmacao');
+        var myModal = new bootstrap.Modal(modalElement);
+        myModal.show();
+        
+        // NOVIDADE AQUI: Assim que a animação do Modal terminar de abrir, foca no botão verde!
+        modalElement.addEventListener('shown.bs.modal', function () {
+            document.getElementById('btn_finalizar_modal').focus();
+        }, { once: true }); // O { once: true } garante que o evento rode só 1 vez por abertura.
+        
+    } else {
+        mostrarAlerta("Adicione pelo menos uma chave antes de finalizar!", "warning");
     }
-});
+};
 
-inputLeitor.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault(); 
-        clearTimeout(debounceTimer);
-        let codigo = this.value.trim();
-        adicionarChave(codigo);
-    }
-});
-
-// FECHA AUTOMATICAMENTE OS ALERTAS VERDES DO DJANGO (GERADOS PELO BOTÃO MANUAL)
 document.addEventListener("DOMContentLoaded", function() {
-    const alertasDjango = document.querySelectorAll('.alert-success');
-    alertasDjango.forEach(function(alerta) {
-        setTimeout(function() {
-            let alertInstance = new bootstrap.Alert(alerta);
-            alertInstance.close();
-        }, 7000); 
+    const inputLeitor = document.getElementById('input_leitor');
+    const elementoId = document.getElementById('hidden_usuario_id');
+    const usuarioId = elementoId ? elementoId.value : null;
+    
+    if (inputLeitor) {
+        inputLeitor.focus();
+
+        inputLeitor.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            let codigo = this.value.trim();
+            if (codigo !== '' && codigo !== 'Processando...') {
+                debounceTimer = setTimeout(function() {
+                    adicionarChave(codigo);
+                }, 300);
+            }
+        });
+
+        inputLeitor.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); 
+                clearTimeout(debounceTimer);
+                let codigo = this.value.trim();
+                
+                if (codigo !== '' && codigo !== 'Processando...') {
+                    adicionarChave(codigo);
+                } else if (codigo === '' && usuarioId) {
+                    abrirModalFinalizar();
+                }
+            }
+        });
+    }
+    
+    document.body.addEventListener('click', function(e) {
+        if(e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON' && !e.target.closest('.modal')) {
+            if (inputLeitor) inputLeitor.focus();
+        }
     });
 });

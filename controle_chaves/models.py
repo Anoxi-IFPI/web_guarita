@@ -40,7 +40,7 @@ class Emprestimo(models.Model):
         NOVO = 'NOVO', 'Novo'
         SOLICITADO = 'SOLICITADO', 'Solicitado'
         DEVOLVIDO = 'DEVOLVIDO', 'Devolvido'
-        REPASSADO = 'REPASSADO', 'Repassado'  
+        REPASSADO = 'REPASSADO', 'Repassado'
 
     usuario = models.ForeignKey(
         Usuario,

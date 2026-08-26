@@ -1,0 +1,150 @@
+{% extends "home/base.html" %}
+
+{% block titulo %}Empréstimo Registrado{% endblock %}
+
+{% block conteudo %}
+<style>
+    /* Ícone verde menor, focado no minimalismo */
+    .success-icon-bg {
+        background-color: var(--ifpi-verde, #198754);
+        width: 60px; /* Reduzido o tamanho */
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px auto; /* Menos margem vertical */
+        box-shadow: 0 4px 10px rgba(25, 135, 84, 0.2);
+    }
+    .success-icon-bg i {
+        color: white;
+        font-size: 1.8rem; /* Ícone menor */
+    }
+    
+    /* A caixa do recibo mais larga e horizontal */
+    .resumo-box {
+        background-color: #f8fafc;
+        border: 1px solid #e9eef3;
+        border-radius: 12px;
+        padding: 20px 40px;
+        max-width: 1000px; /* Bem mais largo para preencher a tela */
+        width: 100%;
+        margin: 20px auto 25px auto; /* Diminuído o buraco branco nas margens */
+    }
+    
+    .resumo-linha {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0; /* Menos altura para não ficar um paredão vertical */
+        border-bottom: 1px dashed #cbd5e1; 
+    }
+    
+    .resumo-linha:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .resumo-label {
+        color: #64748b;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    
+    .resumo-valor {
+        color: #0f172a;
+        font-size: 1.15rem;
+        font-weight: 600;
+        text-align: right;
+    }
+    
+    .chave-badge {
+        background-color: #e8eef6;
+        color: #1a4b8c;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 1rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-left: 8px;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4 border-0">
+        
+        <!-- Barra Verde do Topo (Padrão do Sistema) -->
+        <div class="card-header py-3 text-white fw-bold" style="background-color: var(--ifpi-verde);">
+            <h5 class="m-0 font-weight-bold">
+                <i class="fas fa-check-circle me-2"></i> Confirmação de Empréstimo
+            </h5>
+        </div>
+        
+        <!-- Alterado de p-5 para p-4 para diminuir o vazio vertical -->
+        <div class="card-body p-4 text-center">
+            
+            <!-- Ícone e Título mais discretos -->
+            <div class="success-icon-bg">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">Empréstimo Registrado com Sucesso!</h3>
+            <p class="text-secondary fs-6 mb-0">O registro foi concluído e salvo no banco de dados.</p>
+
+            <!-- CAIXA DE DADOS MAIS LARGA -->
+            <div class="resumo-box text-start shadow-sm">
+                
+                <div class="resumo-linha">
+                    <span class="resumo-label">Usuário</span>
+                    <span class="resumo-valor">{{ usuario.nome }}</span>
+                </div>
+                
+                <!-- Data e Hora unificados em 1 linha para ficar mais elegante e horizontal -->
+                <div class="resumo-linha">
+                    <span class="resumo-label">Data e Hora</span>
+                    <span class="resumo-valor">{{ data_atual|date:"d/m/Y - H:i" }}</span>
+                </div>
+                
+                <div class="resumo-linha">
+                    <span class="resumo-label">Quantidade</span>
+                    <span class="resumo-valor text-success fs-4">{{ quantidade }} <span class="text-dark fs-5">chave(s)</span></span>
+                </div>
+                
+                <div class="resumo-linha">
+                    <span class="resumo-label">Chaves Lidas</span>
+                    <div class="d-flex flex-wrap justify-content-end align-items-center" style="max-width: 75%;">
+                        {% for chave in chaves_salvas %}
+                            <span class="chave-badge shadow-sm">
+                                <i class="fas fa-key me-1" style="opacity:0.6;"></i> {{ chave.nome }} ({{ chave.setor }})
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+            </div>
+
+            <!-- CONTADOR REGRESSIVO COM MARGENS REDUZIDAS -->
+            <div class="mb-3">
+                <div class="d-inline-flex align-items-center px-4 py-2 bg-light shadow-sm" style="border-radius: 30px; border: 1px solid #e9eef3;">
+                    <i class="fas fa-clock text-primary me-2 fs-5"></i> 
+                    <span class="text-secondary fw-medium fs-5">Retornando em <strong id="timer" class="text-dark fs-4 mx-1">5</strong> segundos...</span>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    let segundos = 20;
+    const timerElement = document.getElementById('timer');
+    
+    const intervalo = setInterval(() => {
+        segundos--;
+        timerElement.innerText = segundos;
+        if (segundos <= 0) {
+            clearInterval(intervalo);
+            window.location.href = "{% url 'cadastrar_emprestimo' %}";
+        }
+    }, 1000);
+</script>
+{% endblock %}

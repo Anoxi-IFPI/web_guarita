@@ -14,10 +14,22 @@
     .input-grande:focus {
         border-color: var(--ifpi-verde, #28a745); box-shadow: 0 0 10px rgba(40, 167, 69, 0.3); outline: none;
     }
+    
+    /* EFEITO VISUAL: Borda de destaque quando o botão é focado pelo JS */
+    #btn_finalizar_modal {
+        transition: all 0.2s ease-in-out;
+    }
+    #btn_finalizar_modal:focus {
+        outline: none !important;
+        /* Cria uma borda grossa e verde brilhante ao redor */
+        box-shadow: 0 0 0 6px rgba(25, 135, 84, 0.4) !important;
+        border: 2px solid #0f5132 !important;
+        transform: scale(1.05); /* Dá um pequeno salto pra mostrar que tá selecionado */
+    }
 </style>
 
 <div class="container-fluid mt-2"> 
-    <!-- ID escondido para o JS saber quem é o usuário -->
+    
     <input type="hidden" id="hidden_usuario_id" value="{{ usuario.id }}">
             
     <div class="card shadow mb-4 border-0">
@@ -47,41 +59,27 @@
     <!-- Leitor -->
     <div class="card shadow mb-4 border-0">
         <div class="card-body p-4 text-center">
-            <!-- Formulário para o Plano B (Botão) -->
-            <form method="POST" action="{% url 'adicionar_chaves_emprestimo' usuario.id %}" id="formAdicionarChave">
-                {% csrf_token %}
-                <label for="codigo" class="form-label fw-bold fs-5 text-secondary mb-3">
-                    <i class="fas fa-barcode"></i> Leia a chave ou digite o código para EMPRESTAR
-                </label>
-                
-                <div class="mb-5 mt-4">
-                    <input type="text" name="codigo" id="input_leitor" class="input-grande" placeholder="Aguardando leitura do código..." autofocus autocomplete="off">
-                    <div id="alerta_container" class="mt-4"></div>
-                    <!-- NOTIFICAÇÃO DE ERRO (Que você já tem) -->
-                    {% if erro %}
-                        <div class="alert alert-danger mt-4 mb-0 py-2 d-inline-block fs-5">
-                            <i class="fas fa-exclamation-triangle"></i> {{ erro }}
-                        </div>
-                    {% endif %}
-
-                    {% comment %} <!-- NOTIFICAÇÃO DE SUCESSO (Adicione este bloco) -->
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-success mt-4 mb-0 py-2 d-inline-block fs-5">
-                                <i class="fas fa-check-circle"></i> {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %} {% endcomment %}
-                </div>
-
-                <!-- IMPORTANTE: O botão 'Finalizar' que era seu plano B ficará invisível no JS caso tudo dê certo, mas no HTML ele fica visível (ou escondido com 'd-none') de acordo com sua preferência. Para seguir sua instrução de deixá-lo ali, ele virá no bloco inferior. -->
             
+            <label for="codigo" class="form-label fw-bold fs-5 text-secondary mb-3">
+                <i class="fas fa-barcode"></i> Leia as chaves. Para confirmar, dê <b>Enter</b> com o campo vazio.
+            </label>
+            
+            <div class="mb-5 mt-4">
+                <input type="text" name="codigo" id="input_leitor" class="input-grande" placeholder="Aguardando leitura..." autofocus autocomplete="off">
+                <div id="alerta_container" class="mt-4"></div>
+                {% if erro %}
+                    <div class="alert alert-danger mt-4 mb-0 py-2 d-inline-block fs-5 shadow-sm">
+                        <i class="fas fa-exclamation-triangle"></i> {{ erro }}
+                    </div>
+                {% endif %}
+            </div>
+
         </div>
     </div>
 
     <div class="card shadow mb-4 border-0">
         <div class="card-header bg-white py-3">
-            <h6 class="mb-0 fw-bold text-secondary"><i class="fas fa-list me-2"></i> Chaves Registradas neste Empréstimo</h6>
+            <h6 class="mb-0 fw-bold text-secondary"><i class="fas fa-list me-2"></i> Chaves Lidas</h6>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -97,7 +95,6 @@
                         </tr>
                     </thead>
                     <tbody id="tbody_chaves">
-                        <!-- O Django carrega o que já tá no banco se a página for atualizada (status 'NOVO' na visão que envia do backend se necessário, ou pegando 'SOLICITADO' se você manteve a view original sem mudar) -->
                         {% for emp in emprestimos_em_andamento %}
                             {% with chave=emp.chaves.first %}
                             {% if chave %}
@@ -117,8 +114,8 @@
                             {% endwith %}
                         {% empty %}
                         <tr id="linha_vazia">
-                            <td colspan="5" class="text-center py-6 text-muted">
-                                <i class="fas fa-info-circle fs-4 mb-2 d-block"></i> Aguardando leitura...
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-info-circle fs-4 mb-2 d-block"></i> Nenhuma chave bipada ainda...
                             </td>
                         </tr>
                         {% endfor %}
@@ -127,29 +124,49 @@
             </div>
         </div>
         
-        <div class="card-footer bg-white py-3 d-flex justify-content-between align-items-center">
-            
-            <!-- SEU BOTÃO IDÊNTICO AO DA DEVOLUÇÃO -->
-            <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary shadow-sm px-4 text-white btn-lg">
-                <i class="fas fa-chevron-left me-2"></i> Voltar para Listagem
-            </a>
-            
+        <div class="card-footer bg-white py-3 d-flex justify-content-end align-items-center">
             <div>
-                <!-- Botão CANCELAR (mantido) -->
-                <a href="{% url 'remover_emprestimo' usuario.id %}" class="btn btn-danger px-4 me-3 btn-lg shadow-sm" onclick="return confirm('Deseja cancelar este empréstimo e descartar as chaves bipadas?');">
+                <a href="{% url 'remover_emprestimo' usuario.id %}" class="btn btn-danger px-4 me-3 btn-lg shadow-sm" onclick="return confirm('Deseja cancelar o empréstimo e limpar a lista?');">
                     <i class="fas fa-times me-2"></i> Cancelar Empréstimo
                 </a>
                 
-                <!-- Botão FINALIZAR (Plano B) -->
-                <button type="submit" id="btn_finalizar" class="btn btn-success px-4 btn-lg shadow-sm" style="background-color: var(--ifpi-verde-escuro);">
+                <button type="button" class="btn btn-success px-4 btn-lg shadow-sm" style="background-color: var(--ifpi-verde-escuro);" onclick="abrirModalFinalizar()">
                     Confirmar Empréstimo <i class="fas fa-check-circle ms-2"></i>
                 </button>
             </div>
-            
-            </form> <!-- O fechamento do form tem que ficar aqui depois do botão de confirmar -->
         </div>
     </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO DO SEU VÍDEO -->
+    <div class="modal fade" id="modalConfirmacao" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-body text-center p-5">
+                    
+                    <div class="mx-auto mb-4 d-flex justify-content-center align-items-center" style="width: 80px; height: 80px; background-color: var(--ifpi-verde, #198754); border-radius: 50%;">
+                        <i class="fas fa-check text-white" style="font-size: 2.5rem;"></i>
+                    </div>
+                    
+                    <h3 class="fw-bold text-dark mb-3">Finalizar empréstimo?</h3>
+                    <p class="fs-5 text-secondary mb-4">Foram registradas <strong id="qtdModal" class="text-dark">0</strong> chaves.</p>
+                    
+                    <div class="d-flex justify-content-center gap-4 mt-4">
+                        <button type="button" class="btn px-4 py-2 fw-bold text-white shadow-sm" data-bs-dismiss="modal" style="border-radius: 30px; background-color: #6c757d;">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </button>
+                        
+                        <!-- BOTÃO COM BORDA DE DESTAQUE ATIVADA -->
+                        <a href="{% url 'finalizar_emprestimo' usuario.id %}" id="btn_finalizar_modal" class="btn px-4 py-2 fw-bold text-white shadow-sm btn-destaque-enter" style="border-radius: 30px; background-color: var(--ifpi-verde, #198754);">
+                            <i class="fas fa-check me-2"></i> Finalizar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<script src="{% static 'emprestimos/js/script.js' %}?v=3"></script> 
+<!-- SCRIPT CARREGADO UMA ÚNICA VEZ! -->
+<script src="{% static 'emprestimos/js/script.js' %}?v=8000"></script> 
 {% endblock conteudo %}
