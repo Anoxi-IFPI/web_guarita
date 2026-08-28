@@ -41,18 +41,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- 1º LOOP: Varre os empréstimos -->
+                        <!-- 1º LOOP: Varre os empréstimos (O 2º loop de chaves foi removido!) -->
                         {% for item in lista %}
-                            
-                            <!-- 2º LOOP: Varre as chaves DENTRO do empréstimo para separar em linhas! -->
-                            {% for chave in item.chaves.all %}
                             <tr>
                                 <td><strong>{{ item.id }}</strong></td>
                                 
-                                <!-- COLUNA LIMPA: Retirada a "sombra" (badge) e adicionado o zero à esquerda -->
-                                <td>{{ chave.id|stringformat:"02d" }}</td>
+                                <!-- Verificamos se existe uma chave vinculada diretamente -->
+                                {% if item.chave %}
+                                    <td>{{ item.chave.id|stringformat:"02d" }}</td>
+                                    <td class="text-dark">{{ item.chave.nome }} - {{ item.chave.setor }}</td>
+                                {% else %}
+                                    <td class="text-center">-</td>
+                                    <td class="text-danger small">Sem chaves vinculadas</td>
+                                {% endif %}
                                 
-                                <td class="text-dark">{{ chave.nome }}</td>
                                 <td>{{ item.usuario.nome }}</td>
                                 <td>{{ item.usuario.matricula }}</td>
                                 <td>{{ item.data|date:"d/m/Y H:i" }}</td>
@@ -66,24 +68,12 @@
                                     {% endif %}
                                 </td>
                             </tr>
-                            {% empty %}
-                            <tr>
-                                <td><strong>#{{ item.id }}</strong></td>
-                                <td class="text-center">-</td>
-                                <td class="text-danger small">Sem chaves vinculadas</td>
-                                <td>{{ item.usuario.nome }}</td>
-                                <td>{{ item.usuario.matricula }}</td>
-                                <td>{{ item.data|date:"d/m/Y H:i" }}</td>
-                                <td><span class="badge bg-secondary">Vazio</span></td>
-                            </tr>
-                            {% endfor %}
-                            
                         {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">
-                                <i class="fas fa-info-circle fs-4 mb-2 d-block"></i> Nenhum empréstimo registrado.
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="fas fa-info-circle fs-4 mb-2 d-block"></i> Nenhum empréstimo registrado.
+                                </td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>

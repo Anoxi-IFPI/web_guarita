@@ -237,10 +237,6 @@ def gerar_codigo_barras(request, id):
     return render(
         request, "home/cod_barras/codigo_barras.html", contexto
     )
-    
-# ==========================================
-# VIEWS PARA GESTÃO DE EMPRÉSTIMOS (Lógica de 1 Chave = 1 Empréstimo Sequencial)
-# ========================================== 
 
 
 # ==========================================
@@ -269,7 +265,11 @@ def cadastrar_emprestimo(request):
     return render(request, 'home/emprestimos/forms.html', {'form': form})
 
 def adicionar_chaves_emprestimo(request, id):
-    usuario = get_object_or_404(Usuario, id=id)
+    try:
+        usuario = Usuario.objects.get(id=id)
+    except Usuario.DoesNotExist:
+        return redirect('listar_emprestimos')
+        
     limite = timezone.now() - timedelta(minutes=30)
     emprestimos_em_andamento = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO', data__gte=limite).order_by('-id')
 
@@ -290,19 +290,25 @@ def api_adicionar_chave_emprestimo(request):
         return JsonResponse({'erro': 'Erro: Código inválido. Digite apenas números!'}, status=200)
 
     try:
-        usuario = get_object_or_404(Usuario, id=usuario_id)
-        chave_encontrada = get_object_or_404(Chave, id=codigo)
+        usuario = Usuario.objects.get(id=usuario_id)
+        chave_encontrada = Chave.objects.get(id=codigo)
 
-        chave_ativa = Emprestimo.objects.filter(chaves=chave_encontrada, status__in=['NOVO', 'REPASSADO']).first()
+        # Ajustado de chaves= para chave=
+        chave_ativa = Emprestimo.objects.filter(chave=chave_encontrada, status__in=['NOVO', 'REPASSADO']).first()
         if chave_ativa:
             return JsonResponse({'erro': f'Acesso negado: Chave já está com {chave_ativa.usuario.nome}!'}, status=200)
             
-        chave_rascunho = Emprestimo.objects.filter(chaves=chave_encontrada, status='SOLICITADO').first()
+        # Ajustado de chaves= para chave=
+        chave_rascunho = Emprestimo.objects.filter(chave=chave_encontrada, status='SOLICITADO').first()
         if chave_rascunho:
             return JsonResponse({'erro': 'Esta chave já está na sua lista!'}, status=200)
 
-        novo_emprestimo = Emprestimo.objects.create(usuario=usuario, status=Emprestimo.Status.SOLICITADO)
-        novo_emprestimo.chaves.add(chave_encontrada)
+        # Criação direta na mesma linha, atribuindo a chave diretamente
+        novo_emprestimo = Emprestimo.objects.create(
+            usuario=usuario, 
+            chave=chave_encontrada, 
+            status=Emprestimo.Status.SOLICITADO
+        )
 
         return JsonResponse({
             'sucesso': True,
@@ -314,12 +320,18 @@ def api_adicionar_chave_emprestimo(request):
 
     except Chave.DoesNotExist:
         return JsonResponse({'erro': 'Chave não encontrada!'}, status=200)
+    except Usuario.DoesNotExist:
+        return JsonResponse({'erro': 'Usuário não encontrado!'}, status=200)
 
 def finalizar_emprestimo(request, id):
-    usuario = get_object_or_404(Usuario, id=id)
+    try:
+        usuario = Usuario.objects.get(id=id)
+    except Usuario.DoesNotExist:
+        return redirect('listar_emprestimos')
     
     rascunhos = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO')
-    chaves_salvas = [emp.chaves.first() for emp in rascunhos if emp.chaves.first()]
+    # Ajustado de emp.chaves.first() para emp.chave
+    chaves_salvas = [emp.chave for emp in rascunhos if emp.chave]
     quantidade = len(chaves_salvas)
 
     if quantidade > 0:
@@ -340,10 +352,120 @@ def remover_emprestimo(request, id):
     return redirect('listar_emprestimos')
 
 def remover_chave_emprestimo(request, emprestimo_id, chave_id):
-    emprestimo = get_object_or_404(Emprestimo, id=emprestimo_id)
-    usuario_id = emprestimo.usuario.id
-    emprestimo.delete() 
-    return redirect('adicionar_chaves_emprestimo', id=usuario_id)
+    try:
+        emprestimo = Emprestimo.objects.get(id=emprestimo_id)
+        usuario_id = emprestimo.usuario.id
+        emprestimo.delete() 
+        return redirect('adicionar_chaves_emprestimo', id=usuario_id)
+    except Emprestimo.DoesNotExist:
+        return redirect('listar_emprestimos')
+    
+# # ==========================================
+# # VIEWS PARA GESTÃO DE EMPRÉSTIMOS (Lógica de 1 Chave = 1 Empréstimo Sequencial)
+# # ========================================== 
+
+
+# # ==========================================
+# # VIEWS PARA GESTÃO DE EMPRÉSTIMOS
+# # ========================================== 
+
+# def listar_emprestimos(request):
+#     emprestimos = Emprestimo.objects.filter(status__in=['NOVO', 'REPASSADO'])
+#     return render(request, 'home/emprestimos/listagem.html', {'lista': emprestimos})
+
+# def cadastrar_emprestimo(request):
+#     if request.method == 'POST':
+#         form = EmprestimoForm(request.POST)
+#         if form.is_valid():
+#             matricula_digitada = form.cleaned_data['matricula']
+#             try:
+#                 usuario_encontrado = Usuario.objects.get(matricula=matricula_digitada)
+#             except Usuario.DoesNotExist:
+#                 form.add_error('matricula', 'Usuário não encontrado.')
+#             else:
+#                 # ====== VASSOURADA ======
+#                 Emprestimo.objects.filter(usuario=usuario_encontrado, status='SOLICITADO').delete()
+#                 return redirect('adicionar_chaves_emprestimo', id=usuario_encontrado.id)
+#     else:
+#         form = EmprestimoForm()
+#     return render(request, 'home/emprestimos/forms.html', {'form': form})
+
+# def adicionar_chaves_emprestimo(request, id):
+#     usuario = get_object_or_404(Usuario, id=id)
+#     limite = timezone.now() - timedelta(minutes=30)
+#     emprestimos_em_andamento = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO', data__gte=limite).order_by('-id')
+
+#     contexto = {
+#         'usuario': usuario,
+#         'emprestimos_em_andamento': emprestimos_em_andamento,
+#     }
+#     return render(request, 'home/emprestimos/detalhes.html', contexto)
+
+# def api_adicionar_chave_emprestimo(request):
+#     codigo = request.GET.get('codigo', '').strip()
+#     usuario_id = request.GET.get('usuario_id', '').strip()
+
+#     if not codigo or not usuario_id:
+#         return JsonResponse({'erro': 'Código ausente.'}, status=400)
+
+#     if not codigo.isdigit():
+#         return JsonResponse({'erro': 'Erro: Código inválido. Digite apenas números!'}, status=200)
+
+#     try:
+#         usuario = get_object_or_404(Usuario, id=usuario_id)
+#         chave_encontrada = get_object_or_404(Chave, id=codigo)
+
+#         chave_ativa = Emprestimo.objects.filter(chaves=chave_encontrada, status__in=['NOVO', 'REPASSADO']).first()
+#         if chave_ativa:
+#             return JsonResponse({'erro': f'Acesso negado: Chave já está com {chave_ativa.usuario.nome}!'}, status=200)
+            
+#         chave_rascunho = Emprestimo.objects.filter(chaves=chave_encontrada, status='SOLICITADO').first()
+#         if chave_rascunho:
+#             return JsonResponse({'erro': 'Esta chave já está na sua lista!'}, status=200)
+
+#         novo_emprestimo = Emprestimo.objects.create(usuario=usuario, status=Emprestimo.Status.SOLICITADO)
+#         novo_emprestimo.chaves.add(chave_encontrada)
+
+#         return JsonResponse({
+#             'sucesso': True,
+#             'emprestimo_id': novo_emprestimo.id,
+#             'chave_id': chave_encontrada.id,
+#             'chave_nome': chave_encontrada.nome,
+#             'chave_setor': chave_encontrada.setor
+#         })
+
+#     except Chave.DoesNotExist:
+#         return JsonResponse({'erro': 'Chave não encontrada!'}, status=200)
+
+# def finalizar_emprestimo(request, id):
+#     usuario = get_object_or_404(Usuario, id=id)
+    
+#     rascunhos = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO')
+#     chaves_salvas = [emp.chaves.first() for emp in rascunhos if emp.chaves.first()]
+#     quantidade = len(chaves_salvas)
+
+#     if quantidade > 0:
+#         rascunhos.update(status='NOVO')
+#         contexto = {
+#             'usuario': usuario,
+#             'chaves_salvas': chaves_salvas,
+#             'quantidade': quantidade,
+#             'data_atual': timezone.now()
+#         }
+#         return render(request, 'home/emprestimos/sucesso.html', contexto)
+#     else:
+#         messages.error(request, 'Nenhuma chave encontrada para finalizar.')
+#         return redirect('listar_emprestimos')
+
+# def remover_emprestimo(request, id):
+#     Emprestimo.objects.filter(usuario_id=id, status='SOLICITADO').delete()
+#     return redirect('listar_emprestimos')
+
+# def remover_chave_emprestimo(request, emprestimo_id, chave_id):
+#     emprestimo = get_object_or_404(Emprestimo, id=emprestimo_id)
+#     usuario_id = emprestimo.usuario.id
+#     emprestimo.delete() 
+#     return redirect('adicionar_chaves_emprestimo', id=usuario_id)
 
 # ==========================================
 # VIEWS PARA NOVA DEVOLUÇÃO INSTANTÂNEA

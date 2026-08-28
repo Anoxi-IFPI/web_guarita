@@ -96,22 +96,21 @@
                     </thead>
                     <tbody id="tbody_chaves">
                         {% for emp in emprestimos_em_andamento %}
-                            {% with chave=emp.chaves.first %}
-                            {% if chave %}
+                            <!-- Acessamos a chave de forma direta agora! -->
+                            {% if emp.chave %}
                             <tr>
                                 <td class="ps-4 fw-bold text-secondary">#{{ emp.id }}</td>
-                                <td>{{ chave.id|stringformat:"02d" }}</td>
-                                <td class="fw-bold">{{ chave.nome }}</td>
-                                <td>{{ chave.setor }}</td>
+                                <td>{{ emp.chave.id|stringformat:"02d" }}</td>
+                                <td class="fw-bold">{{ emp.chave.nome }}</td>
+                                <td>{{ emp.chave.setor }}</td>
                                 <td><span class="badge bg-primary">Ativa</span></td>
                                 <td class="text-center">
-                                    <a href="{% url 'remover_chave_emprestimo' emp.id chave.id %}" class="btn btn-sm btn-outline-danger" title="Remover">
+                                    <a href="{% url 'remover_chave_emprestimo' emp.id emp.chave.id %}" class="btn btn-sm btn-outline-danger" title="Remover">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </td>
                             </tr>
                             {% endif %}
-                            {% endwith %}
                         {% empty %}
                         <tr id="linha_vazia">
                             <td colspan="6" class="text-center py-5 text-muted">
