@@ -61,6 +61,7 @@ function buscarChave(codigo) {
             </span>
         `;
         
+        
         // Joga a chave lida sempre para o topo da lista
         listaChaves.prepend(li);
     })

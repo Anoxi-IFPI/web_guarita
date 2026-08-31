@@ -477,9 +477,9 @@ def api_buscar_chave_devolucao(request):
     if not codigo:
         return JsonResponse({'erro': 'Nenhum código lido.'}, status=400)
 
-    # 1. Busca o empréstimo ativo
+    # 1. Busca o empréstimo ativo (CORRIGIDO para chave__id)
     emprestimo = Emprestimo.objects.filter( 
-        chaves__id=codigo,
+        chave__id=codigo,
         status__in=[Emprestimo.Status.NOVO, Emprestimo.Status.REPASSADO]
     ).first()
 
@@ -490,7 +490,8 @@ def api_buscar_chave_devolucao(request):
     emprestimo.status = Emprestimo.Status.DEVOLVIDO
     emprestimo.save()
 
-    chave = emprestimo.chaves.first()
+    # CORRIGIDO para acessar a chave diretamente
+    chave = emprestimo.chave
 
     # 3. Retorna os dados para a tela mostrar o card
     return JsonResponse({
@@ -511,16 +512,17 @@ def devolver_emprestimo(request):
             messages.error(request, 'Nenhum código foi lido ou digitado.')
             return redirect('devolver_emprestimo')
 
-        # Busca direta no banco, sem utilizar atalhos embutidos
+        # Busca direta no banco (CORRIGIDO para chave__id)
         emprestimo = Emprestimo.objects.filter(
-            chaves__id=codigo,
+            chave__id=codigo,
             status__in=[Emprestimo.Status.NOVO, Emprestimo.Status.REPASSADO]
         ).first()
 
         if emprestimo:
             emprestimo.status = Emprestimo.Status.DEVOLVIDO
             emprestimo.save()
-            messages.success(request, f'Chave {emprestimo.chaves.first().nome} devolvida com sucesso pelo modo manual!')
+            # CORRIGIDO para acessar a chave diretamente
+            messages.success(request, f'Chave {emprestimo.chave.nome} devolvida com sucesso pelo modo manual!')
         else:
             messages.error(request, 'Chave não encontrada ou já devolvida.')
             
