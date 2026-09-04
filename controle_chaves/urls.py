@@ -4,7 +4,12 @@ from . import views
 urlpatterns = [
     
     # --- ROTAS DE USUÁRIOS ---
-    path('', views.home, name='home'),
+# --- ROTA INICIAL (OPERAÇÃO RÁPIDA) ---
+    path('', views.operacao_rapida, name='operacao_rapida'),
+    
+    # --- ROTA DO PAINEL ADMIN (Antiga Home) ---
+    path('painel/', views.painel_admin, name='painel_admin'),
+    
     path('usuarios/cadastrar/', views.cadastrar_usuario, name='cadastrar_usuario'),
     path('usuarios/listar/', views.listar_usuario, name='listar_usuario'),   
     path('usuarios/editar/<int:id>', views.editar_usuario, name='editar_usuario'),

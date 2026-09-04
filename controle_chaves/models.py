@@ -100,6 +100,8 @@ class Emprestimo(models.Model):
         choices=Status.choices,
         default=Status.NOVO
     )
+    #DATA DE DEVOLUÇÃO////
+    data_devolucao = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['-data']

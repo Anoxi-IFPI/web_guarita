@@ -1,5 +1,5 @@
 from datetime import timedelta
-
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, render, HttpResponse, redirect
 from django.utils import timezone
 from .models import Chave, Usuario, Emprestimo
@@ -20,12 +20,15 @@ from django.shortcuts import render
 # ==========================================
 # VIEWS PARA PAGINA INICIAL
 # ========================================== 
-def home(request):
-    
-    #busca as chaves
-    home = Chave.objects.all()
-    
-    return render(request, 'home/index.html', {'chaves': home})
+# Nova tela inicial (Operação Rápida)
+def operacao_rapida(request):
+    return render(request, 'home/operacao_rapida.html')
+
+# Antiga home, agora será o painel Admin
+def painel_admin(request):
+    chaves = Chave.objects.all()
+    return render(request, 'home/index.html', {'chaves': chaves})
+
 
 #Viws da pagina de usuários
 # NOVA VIEW: Para o formulário de cadastro de utilizadores
@@ -249,6 +252,9 @@ def listar_emprestimos(request):
 
 def cadastrar_emprestimo(request):
     if request.method == 'POST':
+        # SALVA A ORIGEM: Se vier da tela rápida, salva 'rapida'. Se não, o padrão é 'admin'.
+        request.session['origem_emprestimo'] = request.POST.get('origem', 'admin')
+        
         form = EmprestimoForm(request.POST)
         if form.is_valid():
             matricula_digitada = form.cleaned_data['matricula']
@@ -257,7 +263,6 @@ def cadastrar_emprestimo(request):
             except Usuario.DoesNotExist:
                 form.add_error('matricula', 'Usuário não encontrado.')
             else:
-                # ====== VASSOURADA ======
                 Emprestimo.objects.filter(usuario=usuario_encontrado, status='SOLICITADO').delete()
                 return redirect('adicionar_chaves_emprestimo', id=usuario_encontrado.id)
     else:
@@ -330,18 +335,31 @@ def finalizar_emprestimo(request, id):
         return redirect('listar_emprestimos')
     
     rascunhos = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO')
-    # Ajustado de emp.chaves.first() para emp.chave
     chaves_salvas = [emp.chave for emp in rascunhos if emp.chave]
     quantidade = len(chaves_salvas)
 
     if quantidade > 0:
         rascunhos.update(status='NOVO')
+        
+        # RECUPERA A ORIGEM DA SESSÃO
+        origem = request.session.get('origem_emprestimo', 'admin')
+        
         contexto = {
             'usuario': usuario,
             'chaves_salvas': chaves_salvas,
             'quantidade': quantidade,
-            'data_atual': timezone.now()
+            'data_atual': timezone.now(),
+            'origem': origem  # <-- Envia a origem para o HTML
         }
+        
+        # Limpa a sessão para não interferir nas próximas ações
+        if 'origem_emprestimo' in request.session:
+            del request.session['origem_emprestimo']
+            
+        # Gera o alerta verde flutuante que aparecerá na tela inicial rápida
+        if origem == 'rapida':
+            messages.success(request, f'{quantidade} chave(s) emprestada(s) com sucesso!')
+            
         return render(request, 'home/emprestimos/sucesso.html', contexto)
     else:
         messages.error(request, 'Nenhuma chave encontrada para finalizar.')
@@ -349,6 +367,13 @@ def finalizar_emprestimo(request, id):
 
 def remover_emprestimo(request, id):
     Emprestimo.objects.filter(usuario_id=id, status='SOLICITADO').delete()
+    
+    origem = request.session.get('origem_emprestimo', 'admin')
+    if origem == 'rapida':
+        if 'origem_emprestimo' in request.session:
+            del request.session['origem_emprestimo']
+        return redirect('operacao_rapida')
+        
     return redirect('listar_emprestimos')
 
 def remover_chave_emprestimo(request, emprestimo_id, chave_id):
@@ -488,6 +513,8 @@ def api_buscar_chave_devolucao(request):
 
     # 2. DEVOLUÇÃO INSTANTÂNEA: Atualiza o banco na mesma hora
     emprestimo.status = Emprestimo.Status.DEVOLVIDO
+    # REGITRAR A DATA DA DEVOLUÇÃO
+    emprestimo.data_devolucao = timezone.now()  
     emprestimo.save()
 
     # CORRIGIDO para acessar a chave diretamente
@@ -503,34 +530,44 @@ def api_buscar_chave_devolucao(request):
         'usuario_matricula': emprestimo.usuario.matricula
     })
 
+
 def devolver_emprestimo(request):
-    # Plano B: Se o usuário precisou usar o botão "Confirmar Devolução"
     if request.method == 'POST':
         codigo = request.POST.get('codigo', '').strip()
+        
+        # 1. Captura a origem enviada pelo formulário (se não existir, assume 'admin')
+        origem = request.POST.get('origem', 'admin')
 
         if not codigo:
             messages.error(request, 'Nenhum código foi lido ou digitado.')
+            # Retorna para a tela certa se der erro de campo vazio
+            if origem == 'rapida':
+                return redirect('operacao_rapida')
             return redirect('devolver_emprestimo')
 
-        # Busca direta no banco (CORRIGIDO para chave__id)
+        # 2. Busca direta no banco
         emprestimo = Emprestimo.objects.filter(
             chave__id=codigo,
             status__in=[Emprestimo.Status.NOVO, Emprestimo.Status.REPASSADO]
         ).first()
 
         if emprestimo:
+            # 3. Devolução
             emprestimo.status = Emprestimo.Status.DEVOLVIDO
+            emprestimo.data_devolucao = timezone.now()
             emprestimo.save()
-            # CORRIGIDO para acessar a chave diretamente
-            messages.success(request, f'Chave {emprestimo.chave.nome} devolvida com sucesso pelo modo manual!')
+            messages.success(request, f'Chave {emprestimo.chave.nome} devolvida com sucesso!')
         else:
             messages.error(request, 'Chave não encontrada ou já devolvida.')
             
+        # 4. Roteamento Inteligente: Volta para a tela de origem
+        if origem == 'rapida':
+            return redirect('operacao_rapida')
+            
         return redirect('devolver_emprestimo')
 
-    # Acesso normal à página (GET)
+    # Acesso normal à página dedicada de devolução (GET via Painel Admin)
     return render(request, 'home/emprestimos/devolver.html')
-
 
 
 # def repassar_emprestimo(request, id):

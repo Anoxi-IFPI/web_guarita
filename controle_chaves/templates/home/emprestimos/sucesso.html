@@ -141,9 +141,16 @@
     const intervalo = setInterval(() => {
         segundos--;
         timerElement.innerText = segundos;
+        
         if (segundos <= 0) {
             clearInterval(intervalo);
-            window.location.href = "{% url 'cadastrar_emprestimo' %}";
+            
+            // Verifica a origem pelo Django para decidir o destino
+            {% if origem == 'rapida' %}
+                window.location.href = "{% url 'operacao_rapida' %}";
+            {% else %}
+                window.location.href = "{% url 'cadastrar_emprestimo' %}"; 
+            {% endif %}
         }
     }, 1000);
 </script>
