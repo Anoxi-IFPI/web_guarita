@@ -1,0 +1,191 @@
+/* 1. Paleta de Cores Institucionais IFPI */
+        :root {
+            --ifpi-verde: #28a745;
+            --ifpi-verde-escuro: #1e7e34;
+            --ifpi-vermelho: #dc3545;
+            --ifpi-preto: #212529;
+            --ifpi-preto-escuro: #1a1e21;
+            --ifpi-branco: #ffffff;
+            --fundo-conteudo: #f4f6f9;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--fundo-conteudo);
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* 2. Configuração da Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--ifpi-preto);
+            color: var(--ifpi-branco);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: all 0.3s ease-in-out;
+            z-index: 1000;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            background-color: var(--ifpi-preto-escuro);
+            border-bottom: 3px solid var(--ifpi-verde);
+        }
+
+        .sidebar .nav-link {
+            color: #c2c7d0;
+            padding: 12px 20px;
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--ifpi-preto-escuro);
+            color: var(--ifpi-branco);
+            border-left: 4px solid var(--ifpi-verde);
+        }
+
+        .sidebar .nav-link i.fas {
+            width: 25px;
+            text-align: center;
+            margin-right: 10px;
+            color: var(--ifpi-verde);
+        }
+
+        .sidebar .nav-link:hover i.fas {
+            color: var(--ifpi-branco);
+        }
+
+        .sidebar .submenu {
+            background-color: var(--ifpi-preto-escuro);
+        }
+
+        .sidebar .submenu .nav-link {
+            padding-left: 55px;
+            font-size: 0.9em;
+            border-left: none;
+            color: #8a93a2;
+        }
+
+        .sidebar .submenu .nav-link:hover {
+            color: var(--ifpi-verde);
+            background-color: transparent;
+        }
+
+        /* 3. Configuração do Conteúdo e Navbar */
+        .content {
+            margin-left: var(--sidebar-width);
+            transition: transform 0.3s ease-in-out, margin-left 0.3s ease-in-out; /* Suavidade ao abrir/fechar */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar-ifpi {
+            background-color: var(--ifpi-verde);
+            color: var(--ifpi-branco);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-ifpi .btn-toggle {
+            background-color: var(--ifpi-verde-escuro);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            flex-shrink: 0; /* CORREÇÃO 1: Proíbe o botão de ser esmagado e sumir da tela */
+        }
+        
+        .navbar-ifpi .btn-toggle:hover {
+            background-color: var(--ifpi-preto);
+        }
+
+        .nav-icons a {
+            color: var(--ifpi-branco);
+            margin-left: 20px;
+            font-size: 1.2rem;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .nav-icons a:hover {
+            color: var(--ifpi-preto);
+        }
+
+        /* O botão Sair Intocável (Vermelho) */
+        .btn-sair {
+            background-color: var(--ifpi-vermelho);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-left: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-sair:hover { background-color: #c82333; }
+
+        /* 5. NOVO BOTÃO ACESSO RÁPIDO (TRANSLÚCIDO) Intocável */
+        .btn-voltar {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white !important;
+            padding: 6px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 6px;
+            margin-left: 20px;
+            text-decoration: none !important;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-voltar:hover {
+            background-color: white; 
+            color: var(--ifpi-verde-escuro) !important; 
+            border-color: white;
+        }
+
+        /* --------------------------------------------------- */
+        /* CORREÇÃO 2: COMPORTAMENTO DE ABRIR/FECHAR NO PC     */
+        /* --------------------------------------------------- */
+        .sidebar.active { margin-left: calc(-1 * var(--sidebar-width)); }
+        .content.active { margin-left: 0; }
+
+        /* --------------------------------------------------- */
+        /* CORREÇÃO 3: COMPORTAMENTO RESPONSIVO NO CELULAR     */
+        /* --------------------------------------------------- */
+        @media (max-width: 768px) {
+            .sidebar { margin-left: calc(-1 * var(--sidebar-width)); }
+            .sidebar.active { margin-left: 0; }
+            .content { margin-left: 0; width: 100%; }
+            
+            /* Usar 'transform' desliza a tela sem amassar a barra verde */
+            .content.active { transform: translateX(var(--sidebar-width)); }
+            
+            /* Ajustes para a barra superior caber certinho na tela pequena */
+            .navbar-ifpi h5 { display: none; } /* Esconde o título no celular para dar espaço */
+            .nav-icons a { margin-left: 10px; font-size: 1.1rem; }
+            
+            /* Esconde os textos dos botões, deixa apenas os ícones */
+            .btn-voltar span, .btn-sair span { display: none; }
+            
+            /* Diminui margens e tamanhos dos botões no celular */
+            .btn-voltar { margin-left: 10px; padding: 6px 10px; gap: 0; }
+            .btn-sair { margin-left: 10px; padding: 6px 10px; gap: 0; }
+        }

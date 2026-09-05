@@ -115,13 +115,22 @@ TIME_ZONE = 'America/Fortaleza'
 USE_I18N = True
 
 USE_TZ = True
-''
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/Fen/5.2/howto/static-files/
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        # Removido o "CompressedManifest" para evitar quebra de arquivos
+        'BACKEND': 'whitenoise.storage.StaticFilesStorage', 
+    },
+}
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static'] #Diz onde estão os arquivos estáticos do projeto
+
 STATIC_ROOT = BASE_DIR / 'staticfiles' #Empacota os arquivos estáticos para produção na vercel
 
 # Default primary key field type
