@@ -253,7 +253,11 @@ def listar_emprestimos(request):
 def cadastrar_emprestimo(request):
     if request.method == 'POST':
         # SALVA A ORIGEM: Se vier da tela rápida, salva 'rapida'. Se não, o padrão é 'admin'.
-        request.session['origem_emprestimo'] = request.POST.get('origem', 'admin')
+        origem = request.POST.get('origem')
+        if origem:
+            request.session['origem_emprestimo'] = origem
+        
+        origem_atual = request.session.get('origem_emprestimo', 'admin')
         
         form = EmprestimoForm(request.POST)
         if form.is_valid():
@@ -261,12 +265,23 @@ def cadastrar_emprestimo(request):
             try:
                 usuario_encontrado = Usuario.objects.get(matricula=matricula_digitada)
             except Usuario.DoesNotExist:
+                # Se veio da operação rápida e o usuário não existe, manda de volta para lá com erro
+                if origem_atual == 'rapida':
+                    messages.error(request, 'Usuário não encontrado.')
+                    return redirect('operacao_rapida')
+                
                 form.add_error('matricula', 'Usuário não encontrado.')
             else:
                 Emprestimo.objects.filter(usuario=usuario_encontrado, status='SOLICITADO').delete()
                 return redirect('adicionar_chaves_emprestimo', id=usuario_encontrado.id)
+        else:
+            if origem_atual == 'rapida':
+                messages.error(request, 'Matrícula inválida ou não preenchida.')
+                return redirect('operacao_rapida')
+                
     else:
         form = EmprestimoForm()
+    
     return render(request, 'home/emprestimos/forms.html', {'form': form})
 
 def adicionar_chaves_emprestimo(request, id):
@@ -282,7 +297,7 @@ def adicionar_chaves_emprestimo(request, id):
         'usuario': usuario,
         'emprestimos_em_andamento': emprestimos_em_andamento,
     }
-    return render(request, 'home/emprestimos/detalhes.html', contexto)
+    return render(request, 'home/emprestimos/emprestimo.html', contexto)
 
 def api_adicionar_chave_emprestimo(request):
     codigo = request.GET.get('codigo', '').strip()
@@ -360,7 +375,7 @@ def finalizar_emprestimo(request, id):
         if origem == 'rapida':
             messages.success(request, f'{quantidade} chave(s) emprestada(s) com sucesso!')
             
-        return render(request, 'home/emprestimos/sucesso.html', contexto)
+        return render(request, 'home/emprestimos/resumo_sucesso.html', contexto)
     else:
         messages.error(request, 'Nenhuma chave encontrada para finalizar.')
         return redirect('listar_emprestimos')
@@ -498,6 +513,9 @@ def remover_chave_emprestimo(request, emprestimo_id, chave_id):
 
 def api_buscar_chave_devolucao(request):
     codigo = request.GET.get('codigo', '').strip()
+    
+    if not codigo.isdigit():
+        return JsonResponse({'erro': 'Código inválido. Digite apenas números!'}, status=200)
 
     if not codigo:
         return JsonResponse({'erro': 'Nenhum código lido.'}, status=400)

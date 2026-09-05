@@ -27,7 +27,7 @@ urlpatterns = [
    # --- ROTAS DE EMPRÉSTIMOS ---
    path('emprestimos/', views.listar_emprestimos, name='listar_emprestimos'),
     path('emprestimos/cadastrar/', views.cadastrar_emprestimo, name='cadastrar_emprestimo'),
-    path('emprestimos/detalhes/<int:id>/', views.adicionar_chaves_emprestimo, name='adicionar_chaves_emprestimo'),
+    path('emprestimos/registro/<int:id>/', views.adicionar_chaves_emprestimo, name='adicionar_chaves_emprestimo'),
     path('api/adicionar-chave-emprestimo/', views.api_adicionar_chave_emprestimo, name='api_adicionar_chave_emprestimo'), 
     path('emprestimos/finalizar/<int:id>/', views.finalizar_emprestimo, name='finalizar_emprestimo'),   
     path('emprestimos/remover-chave/<int:emprestimo_id>/<int:chave_id>/', views.remover_chave_emprestimo, name='remover_chave_emprestimo'),

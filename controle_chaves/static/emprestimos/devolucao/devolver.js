@@ -67,11 +67,11 @@ function buscarChave(codigo) {
     })
     .catch(error => {
         console.error('Erro:', error);
-        // Se a internet falhar ou der pau no JS, orienta a usar o botão (O Plano B)
-        mostrarAlerta("Falha na leitura automática. Por favor, clique no botão Confirmar Devolução.", 'warning');
-        inputLeitor.value = codigo;
-        inputLeitor.disabled = false;
-        inputLeitor.focus();
+        // Mensagem alterada conforme seu pedido
+        mostrarAlertaRapido("Erro: O código deve conter apenas números.", 'warning');
+        inputDevolucao.value = '';
+        inputDevolucao.disabled = false;
+        inputDevolucao.focus();
     });
 }
 

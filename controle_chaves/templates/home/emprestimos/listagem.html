@@ -8,16 +8,17 @@
         <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: var(--ifpi-verde);">
             <h5 class="m-0 font-weight-bold text-white"><i class="fas fa-clipboard-list me-2"></i> Registro de Empréstimos</h5>
             <div>
-                <a href="{% url 'devolver_emprestimo' %}" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm me-1">
+                <a href="{% url 'devolver_emprestimo' %}" class="btn btn-info text-dark fw-bold btn-sm shadow-sm me-1">
                     <i class="fas fa-undo-alt me-1"></i> Devolver
                 </a>
                 
-                <a href="#" class="btn btn-info text-dark fw-bold btn-sm shadow-sm me-1">
+                <!-- Repassar agora com a cor original dele na tela rápida (Laranja/Warning) -->
+                <a href="#" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm me-1">
                     <i class="fas fa-exchange-alt me-1"></i> Repassar
                 </a>
                 
                 <a href="{% url 'cadastrar_emprestimo' %}" class="btn btn-light text-success fw-bold btn-sm shadow-sm">
-                    <i class="fas fa-plus me-1"></i> Realizar Empréstimo
+                    <i class="fas fa-plus me-1"></i> Novo
                 </a>
                 
                 <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary btn-sm shadow-sm text-white">

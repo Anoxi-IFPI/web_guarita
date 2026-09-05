@@ -4,29 +4,8 @@
 {% block titulo %}Registro de Chaves{% endblock %}
 
 {% block conteudo %}
-<style>
-    .input-grande {
-        width: 100%; padding: 12px 20px; font-size: 1.8rem; font-weight: bold;
-        text-align: center; color: #333; border: 2px solid #ccc; 
-        border-radius: 8px; transition: all 0.3s ease; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
-        letter-spacing: 2px;
-    }
-    .input-grande:focus {
-        border-color: var(--ifpi-verde, #28a745); box-shadow: 0 0 10px rgba(40, 167, 69, 0.3); outline: none;
-    }
-    
-    /* EFEITO VISUAL: Borda de destaque quando o botão é focado pelo JS */
-    #btn_finalizar_modal {
-        transition: all 0.2s ease-in-out;
-    }
-    #btn_finalizar_modal:focus {
-        outline: none !important;
-        /* Cria uma borda grossa e verde brilhante ao redor */
-        box-shadow: 0 0 0 6px rgba(25, 135, 84, 0.4) !important;
-        border: 2px solid #0f5132 !important;
-        transform: scale(1.05); /* Dá um pequeno salto pra mostrar que tá selecionado */
-    }
-</style>
+<link rel="stylesheet" href="{% static 'emprestimos/detalhes/detalhes.css' %}">
+
 
 <div class="container-fluid mt-2"> 
     
@@ -126,11 +105,11 @@
         <div class="card-footer bg-white py-3 d-flex justify-content-end align-items-center">
             <div>
                 <a href="{% url 'remover_emprestimo' usuario.id %}" class="btn btn-danger px-4 me-3 btn-lg shadow-sm" onclick="return confirm('Deseja cancelar o empréstimo e limpar a lista?');">
-                    <i class="fas fa-times me-2"></i> Cancelar Empréstimo
+                    <i class="fas fa-times me-2"></i> Cancelar
                 </a>
                 
                 <button type="button" class="btn btn-success px-4 btn-lg shadow-sm" style="background-color: var(--ifpi-verde-escuro);" onclick="abrirModalFinalizar()">
-                    Confirmar Empréstimo <i class="fas fa-check-circle ms-2"></i>
+                    Confirmar <i class="fas fa-check-circle ms-2"></i>
                 </button>
             </div>
         </div>
@@ -167,5 +146,6 @@
 </div>
 
 <!-- SCRIPT CARREGADO UMA ÚNICA VEZ! -->
-<script src="{% static 'emprestimos/js/script.js' %}?v=8000"></script> 
+<script src="{% static 'emprestimos/detalhes/detalhes.js' %}?v=8000"></script> 
+
 {% endblock conteudo %}

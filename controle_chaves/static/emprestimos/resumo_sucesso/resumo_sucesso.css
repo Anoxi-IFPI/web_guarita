@@ -1,0 +1,64 @@
+    /* Ícone verde menor, focado no minimalismo */
+    .success-icon-bg {
+        background-color: var(--ifpi-verde, #198754);
+        width: 60px; /* Reduzido o tamanho */
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px auto; /* Menos margem vertical */
+        box-shadow: 0 4px 10px rgba(25, 135, 84, 0.2);
+    }
+    .success-icon-bg i {
+        color: white;
+        font-size: 1.8rem; /* Ícone menor */
+    }
+    
+    /* A caixa do recibo mais larga e horizontal */
+    .resumo-box {
+        background-color: #f8fafc;
+        border: 1px solid #e9eef3;
+        border-radius: 12px;
+        padding: 20px 40px;
+        max-width: 1000px; /* Bem mais largo para preencher a tela */
+        width: 100%;
+        margin: 20px auto 25px auto; /* Diminuído o buraco branco nas margens */
+    }
+    
+    .resumo-linha {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0; /* Menos altura para não ficar um paredão vertical */
+        border-bottom: 1px dashed #cbd5e1; 
+    }
+    
+    .resumo-linha:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .resumo-label {
+        color: #64748b;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    
+    .resumo-valor {
+        color: #0f172a;
+        font-size: 1.15rem;
+        font-weight: 600;
+        text-align: right;
+    }
+    
+    .chave-badge {
+        background-color: #e8eef6;
+        color: #1a4b8c;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 1rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-left: 8px;
+    }

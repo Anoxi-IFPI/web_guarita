@@ -16,20 +16,25 @@ function mostrarAlertaRapido(mensagem, tipo) {
     
     containerMensagens.appendChild(alerta);
 
-    // O aviso some sozinho depois de 4 segundos
     setTimeout(() => {
         alerta.classList.remove('show');
-        setTimeout(() => alerta.remove(), 150); // Aguarda a animação do Bootstrap terminar
+        setTimeout(() => alerta.remove(), 150);
     }, 4000);
 }
 
 function processarDevolucaoRapida(codigo) {
     if (codigo === '') return;
 
+    // 1. TRAVA DE SEGURANÇA: Bloqueia se tiver letras ou símbolos
+    if (!/^\d+$/.test(codigo)) {
+        mostrarAlertaRapido("Código inválido. Digite apenas números!", "warning");
+        inputDevolucao.value = '';
+        return;
+    }
+
     inputDevolucao.value = 'Processando...';
     inputDevolucao.disabled = true;
 
-    // Vai no banco e já DEVOLVE a chave
     fetch(`/api/buscar-chave-devolucao/?codigo=${codigo}`)
     .then(response => response.json())
     .then(data => {
@@ -42,16 +47,14 @@ function processarDevolucaoRapida(codigo) {
             return;
         }
 
-        // 1. Mostra a notificação verde
         mostrarAlertaRapido(`Chave ${data.chave_nome} devolvida com sucesso!`, 'success');
 
-        // 2. Remove o texto "Nenhuma chave devolvida" se existir
         const msgVazia = document.getElementById('msg-lista-vazia');
         if (msgVazia) msgVazia.remove();
 
-        // 3. Cria o card de devolução compacto e injeta na tela inicial
         let card = document.createElement('div');
-        card.style.cssText = "padding: 12px 16px; border: 1px solid #c3e6cb; border-radius: 8px; background: #d4edda; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);";
+        // Adicionada transição suave no CSS do card para a hora de sumir
+        card.style.cssText = "padding: 12px 16px; border: 1px solid #c3e6cb; border-radius: 8px; background: #d4edda; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: opacity 0.5s ease, transform 0.5s ease;";
         card.innerHTML = `
             <div>
                 <strong style="color: #155724; font-size: 15px;">
@@ -66,8 +69,22 @@ function processarDevolucaoRapida(codigo) {
             </span>
         `;
         
-        // Joga a chave lida sempre para o topo da lista
         listaDevolvidas.prepend(card);
+
+        // 2. TEMPORIZADOR: Remove o card após 5 segundos
+        setTimeout(() => {
+            card.style.opacity = "0";
+            card.style.transform = "scale(0.95)";
+            
+            setTimeout(() => {
+                card.remove();
+                // Se a lista ficar vazia de novo, devolve o texto padrão
+                if (listaDevolvidas.children.length === 0) {
+                    listaDevolvidas.innerHTML = '<div class="lista-vazia" id="msg-lista-vazia">Nenhuma chave devolvida ainda</div>';
+                }
+            }, 500); // Aguarda o fim da animação de sumir
+        }, 5000);
+
     })
     .catch(error => {
         console.error('Erro:', error);
@@ -78,7 +95,6 @@ function processarDevolucaoRapida(codigo) {
     });
 }
 
-// Escuta a digitação ou o leitor rápido de código de barras
 inputDevolucao.addEventListener('input', function() {
     clearTimeout(debounceTimerDevolucao);
     let codigo = this.value.trim();
@@ -90,7 +106,6 @@ inputDevolucao.addEventListener('input', function() {
     }
 });
 
-// Intercepta o Enter para não recarregar a tela
 inputDevolucao.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         e.preventDefault(); 
@@ -100,7 +115,6 @@ inputDevolucao.addEventListener('keypress', function(e) {
     }
 });
 
-// Intercepta o clique manual no botão "Confirmar Devolução"
 formDevolucao.addEventListener('submit', function(e) {
     e.preventDefault();
     clearTimeout(debounceTimerDevolucao);
