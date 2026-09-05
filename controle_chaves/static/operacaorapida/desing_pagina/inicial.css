@@ -1,0 +1,164 @@
+        /* Paleta Institucional IFPI */
+        :root {
+            --ifpi-verde: #28a745;
+            --ifpi-verde-escuro: #1e7e34;
+            --ifpi-azul: #1a237e; 
+            --ifpi-vermelho: #dc3545;
+            --ifpi-vermelho-escuro: #c82333;
+            --ifpi-preto: #212529;
+            --ifpi-laranja: #f57c00;
+            --ifpi-laranja-escuro: #e65100;
+            --fundo-conteudo: #f4f6f9;
+        }
+
+        body {
+            background-color: var(--fundo-conteudo);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Evita rolagem desnecessária na tela principal no PC */
+        }
+
+        /* Cabeçalho */
+        .header-top { background: var(--ifpi-verde); color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-shrink: 0; z-index: 10; }
+        .header-top .logo-area { display: flex; align-items: center; gap: 12px; }
+        .header-top .logo-area .icon { font-size: 24px; background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 8px; }
+        .header-top .logo-area h1 { font-size: 20px; font-weight: 600; margin: 0; }
+        .header-top .logo-area h1 span { font-weight: 300; opacity: 0.9; }
+        .header-top .header-actions { display: flex; align-items: center; gap: 16px; }
+        .header-top .header-actions .time { font-size: 14px; font-weight: 500; }
+        
+        .btn-sair { background: var(--ifpi-vermelho); color: white; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-sair:hover { background: var(--ifpi-vermelho-escuro); color: white; }
+
+        /* Container Principal */
+        .main-container { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+
+        /* MENSAGENS FLUTUANTES */
+        .mensagens-flutuantes {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            z-index: 1050;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        /* GRID DOS CARDS ESTICADO */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            flex: 1;
+        }
+
+        .card-operacao {
+            background: white;
+            border-radius: 12px;
+            padding: 32px 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* Áreas internas do Card para alinhar ao TOPO */
+        .form-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        /* Card 1: Empréstimo */
+        .card-emprestimo { border-top: 5px solid var(--ifpi-azul); }
+        .card-emprestimo .card-header-title { color: var(--ifpi-azul); font-size: 22px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+        
+        /* Card 2: Devolver */
+        .card-devolver { border-top: 5px solid var(--ifpi-verde); }
+        .card-devolver .card-header-title { color: var(--ifpi-verde); font-size: 22px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+
+        /* Inputs Customizados */
+        .form-group { margin-bottom: 16px; width: 100%; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 12px; }
+        
+        .input-group-custom { position: relative; width: 100%; }
+        .input-group-custom input {
+            width: 100%; padding: 18px 120px 18px 20px; 
+            border: 2px solid var(--ifpi-azul); border-radius: 8px; font-size: 18px; outline: none; transition: 0.2s; font-weight: 500;
+        }
+        .input-group-custom input:focus { box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.15); }
+        
+        /* Botão azul pequeno dentro do input */
+        .input-group-custom .btn-enter {
+            position: absolute; right: 8px; top: 8px; bottom: 8px;
+            background: var(--ifpi-azul); color: white; border: none; border-radius: 6px;
+            padding: 0 24px; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        .input-group-custom .btn-enter:hover { background: #0d1555; }
+
+        .input-simple {
+            width: 100%; padding: 18px 20px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 18px; outline: none; transition: 0.2s; font-weight: 500;
+        }
+        .input-simple:focus { border-color: var(--ifpi-verde); box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.15); }
+
+        /* Botão verde largo */
+        .btn-confirmar-verde {
+            width: 100%; padding: 16px; background: var(--ifpi-verde); color: white; border: none; border-radius: 8px;
+            font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.2s; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-confirmar-verde:hover { background: var(--ifpi-verde-escuro); }
+
+        /* Caixa chaves emprestadas: agora logo abaixo do botão */
+        .box-chaves-emprestadas { margin-top: 24px; }
+
+        .lista-vazia {
+            text-align: center; color: #94a3b8; font-style: italic; font-size: 14px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fafcfd; margin-top: 8px;
+        }
+
+        /* Barra de Ações Inferior */
+        /* Barra de Ações Inferior (Fundo Turquesa Claro) */
+        /* Barra de Ações Inferior (Padrão Cinza Azulado Claro da Lista) */
+        /* Barra de Ações Inferior (Fundo Turquesa Claro) */
+        .taskbar { 
+            background: #e0f2f1; /* Azul/verde turquesa bem suave e moderno */
+            border: 1px solid #b2dfdb; /* Borda levemente mais escura para dar o limite */
+            border-radius: 12px; 
+            padding: 10px 24px; 
+            display: flex; align-items: center; flex-wrap: wrap; gap: 16px; 
+            min-height: 56px; flex-shrink: 0; 
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.06); /* Sombra um pouco mais visível para soltar do fundo */
+            width: 100%; 
+        }
+        .taskbar .separator { width: 1px; height: 28px; background-color: #b2dfdb; }
+        
+        .btn-taskbar { padding: 8px 18px; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: white; text-decoration: none; }
+        .btn-taskbar:hover { transform: translateY(-1px); color: white; box-shadow: 0 4px 8px rgba(248, 242, 242, 0.45); }
+        
+        .btn-repassar { background: var(--ifpi-laranja); }
+        .btn-repassar:hover { background: var(--ifpi-laranja-escuro); }
+        .btn-historico { background: #00427a; }
+        .btn-historico:hover { background: #002b52; }
+        .btn-admin { background: var(--ifpi-vermelho); }
+        .btn-admin:hover { background: var(--ifpi-vermelho-escuro); }
+        .admin-wrapper { margin-left: auto; display: flex; }
+
+        /* RESPONSIVIDADE */
+        @media (max-width: 992px) { 
+            .cards-grid { grid-template-columns: 1fr; } 
+            body { overflow: auto; } /* Permite rolagem no tablet/celular */
+        }
+        @media (max-width: 768px) {
+            .header-top { flex-direction: column; gap: 8px; padding: 12px 16px; }
+            .main-container { padding: 15px 12px; gap: 15px; }
+            .taskbar { padding: 12px; gap: 10px; }
+            .separator { display: none; }
+            .btn-repassar, .btn-historico { flex: 1; padding: 12px 10px; font-size: 13px; }
+            .admin-wrapper { width: 100%; margin-left: 0; }
+            .admin-wrapper .btn-admin { width: 100%; padding: 12px; }
+            .card-operacao { padding: 24px 20px; height: auto; }
+        }
+        @media (max-width: 480px) { .header-top .header-actions .time { font-size: 12px; } }
