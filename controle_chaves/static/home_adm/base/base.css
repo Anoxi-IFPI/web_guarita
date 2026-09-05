@@ -17,7 +17,7 @@
             overflow-x: hidden;
         }
 
-        /* 2. Configuração da Sidebar (Preta e Verde) */
+        /* 2. Configuração da Sidebar */
         .sidebar {
             width: var(--sidebar-width);
             background-color: var(--ifpi-preto);
@@ -82,7 +82,7 @@
         /* 3. Configuração do Conteúdo e Navbar */
         .content {
             margin-left: var(--sidebar-width);
-            transition: all 0.3s ease-in-out;
+            transition: transform 0.3s ease-in-out, margin-left 0.3s ease-in-out; /* Suavidade ao abrir/fechar */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -104,6 +104,7 @@
             border: none;
             padding: 8px 15px;
             border-radius: 4px;
+            flex-shrink: 0; /* CORREÇÃO 1: Proíbe o botão de ser esmagado e sumir da tela */
         }
         
         .navbar-ifpi .btn-toggle:hover {
@@ -140,10 +141,10 @@
 
         /* 5. NOVO BOTÃO ACESSO RÁPIDO (TRANSLÚCIDO) Intocável */
         .btn-voltar {
-            background-color: rgba(255, 255, 255, 0.15); /* Fundo transparente leve */
+            background-color: rgba(255, 255, 255, 0.15);
             color: white !important;
             padding: 6px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.6); /* Borda branca */
+            border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 6px;
             margin-left: 20px;
             text-decoration: none !important;
@@ -161,19 +162,21 @@
         }
 
         /* --------------------------------------------------- */
-        /* COMPORTAMENTO DE ABRIR/FECHAR MENU NO DESKTOP       */
+        /* CORREÇÃO 2: COMPORTAMENTO DE ABRIR/FECHAR NO PC     */
         /* --------------------------------------------------- */
         .sidebar.active { margin-left: calc(-1 * var(--sidebar-width)); }
         .content.active { margin-left: 0; }
 
         /* --------------------------------------------------- */
-        /* COMPORTAMENTO RESPONSIVO NO CELULAR                 */
+        /* CORREÇÃO 3: COMPORTAMENTO RESPONSIVO NO CELULAR     */
         /* --------------------------------------------------- */
         @media (max-width: 768px) {
             .sidebar { margin-left: calc(-1 * var(--sidebar-width)); }
             .sidebar.active { margin-left: 0; }
             .content { margin-left: 0; width: 100%; }
-            .content.active { margin-left: 0; }
+            
+            /* Usar 'transform' desliza a tela sem amassar a barra verde */
+            .content.active { transform: translateX(var(--sidebar-width)); }
             
             /* Ajustes para a barra superior caber certinho na tela pequena */
             .navbar-ifpi h5 { display: none; } /* Esconde o título no celular para dar espaço */
