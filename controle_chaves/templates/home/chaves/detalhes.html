@@ -8,7 +8,6 @@
         <div class="col-12"> 
             <div class="card border-0 shadow-sm mt-2">
                 
-                <!-- Cabeçalho verde padrão IFPI -->
                 <div class="card-header text-white fw-bold py-3" style="background-color: var(--ifpi-verde);">
                     <h5 class="mb-0"><i class="fas fa-key me-2"></i> Detalhes da Chave</h5>
                 </div>
@@ -17,7 +16,6 @@
                     <div class="row">
                         <div class="col-md-2 mb-3">
                             <label class="form-label fw-bold">ID</label>
-                            <!-- Note a variável {{ chave.id }} -->
                             <input type="text" class="form-control bg-light" value="{{ chave.id }}" readonly>
                         </div>
                         <div class="col-md-5 mb-3">
@@ -32,9 +30,8 @@
 
                     <hr class="mt-4 mb-4">
 
-                    <!-- Botão de voltar -->
-                    <div class="d-flex justify-content-start">
-                        <a href="{% url 'listar_chave' %}" class="btn btn-secondary shadow-sm px-4 text-white">
+                    <div class="d-grid d-md-flex justify-content-md-start">
+                        <a href="{% url 'listar_chave' %}" class="btn btn-secondary shadow-sm px-md-4 text-white">
                             <i class="fas fa-chevron-left me-2"></i> Voltar
                         </a>
                     </div>
