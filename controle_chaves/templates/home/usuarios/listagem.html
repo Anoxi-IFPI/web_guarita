@@ -1,12 +1,16 @@
 {% extends 'home/base.html' %}
-
+{% load static %}
 {% block titulo %} Listagem de Usuários {% endblock %}
 
 {% block conteudo %}
+
+<!--Link arquivo local css -->
+<link rel="stylesheet" href="{% static 'usuarios/listagem/listagem.css' %}">
+
 <div class="container-fluid mt-4">
     <div class="card shadow mb-4 border-0">
         
-        <!-- Cabeçalho NOVO: Verde padrão do IFPI -->
+        <!-- Cabeçalho intocado conforme solicitado -->
         <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: var(--ifpi-verde);">
             <h5 class="m-0 font-weight-bold text-white"><i class="fas fa-users me-2"></i> Usuários Cadastrados</h5>
             <div>
@@ -20,7 +24,8 @@
         </div>
         
         <div class="card-body">
-            <div class="table-responsive">
+            <!-- Adicionada a classe table-responsive-hint para o aviso no celular -->
+            <div class="table-responsive table-responsive-hint">
                 <table class="table table-bordered table-hover align-middle">
                     <thead class="table-light">
                         <tr>
@@ -39,19 +44,23 @@
                             <td>{{ item.matricula }}</td>
                             <td>{{ item.vinculo }}</td>
                             <td class="text-center">
-                                <!-- Botões padronizados (Ícone + Texto) -->
-                                <a href="{% url 'editar_usuario' item.id %}"class="btn btn-sm text-white shadow-sm" style="background-color: #495057;" title="Editar">
-                                <i class="fas fa-edit me-1"></i> Editar
-                                </a>
                                 
-                                <a href="{% url 'remover_usuario' item.id %}" class="btn btn-danger btn-sm" 
-                                   onclick="return confirm('Tem certeza que deseja apagar o usuário {{ item.nome }}?');" title="Remover">
-                                    <i class="fas fa-trash"></i> Remover
-                                </a>
+                                <!-- Botões espaçados com gap-2 e nomes ocultos no mobile -->
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <a href="{% url 'editar_usuario' item.id %}" class="btn btn-sm text-white shadow-sm" style="background-color: #495057;" title="Editar">
+                                        <i class="fas fa-edit"></i> <span class="d-none d-md-inline ms-1"></span>
+                                    </a>
+                                    
+                                    <a href="{% url 'remover_usuario' item.id %}" class="btn btn-danger btn-sm shadow-sm" 
+                                       onclick="return confirm('Tem certeza que deseja apagar o usuário {{ item.nome }}?');" title="Remover">
+                                        <i class="fas fa-trash"></i> <span class="d-none d-md-inline ms-1"></span>
+                                    </a>
 
-                                <a href="{% url 'detalhar_usuario' item.id %}"class="btn btn-primary btn-sm text-white shadow-sm" title="Detalhar">
-                                    <i class="fas fa-eye"></i> Detalhar
-                                </a>
+                                    <a href="{% url 'detalhar_usuario' item.id %}" class="btn btn-primary btn-sm text-white shadow-sm" title="Detalhar">
+                                        <i class="fas fa-eye"></i> <span class="d-none d-md-inline ms-1"></span>
+                                    </a>
+                                </div>
+
                             </td>
                         </tr>
                         {% empty %}
