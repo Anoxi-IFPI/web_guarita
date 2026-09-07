@@ -11,26 +11,33 @@
     
     <input type="hidden" id="hidden_usuario_id" value="{{ usuario.id }}">
             
+  <!-- Painel de Identificação do Usuário -->
     <div class="card shadow mb-4 border-0">
         <div class="card-header text-white fw-bold py-3" style="background-color: var(--ifpi-verde);">
             <h5 class="mb-0"><i class="fas fa-id-badge me-2"></i> Atendimento: {{ usuario.matricula }}</h5>
         </div>
         <div class="card-body p-4 bg-light">
-            <div class="row text-center text-md-start">
-                <div class="col-md-6 mb-2 mb-md-0">
+            <!-- Removido o text-center. Agora usa text-start para alinhar tudo à esquerda sempre -->
+            <div class="row text-start">
+                
+                <!-- mb-3 adicionado para dar um respiro melhor entre os itens no celular -->
+                <div class="col-md-6 mb-3 mb-md-0">
                     <span class="text-muted d-block small">Usuário</span>
                     <strong class="fs-5">{{ usuario.nome }}</strong>
                 </div>
-                <div class="col-md-3 mb-2 mb-md-0">
+                
+                <div class="col-md-3 mb-3 mb-md-0">
                     <span class="text-muted d-block small">Matrícula</span>
                     <strong class="fs-5">{{ usuario.matricula }}</strong>
                 </div>
+                
                 <div class="col-md-3">
                     <span class="text-muted d-block small mb-1">Vínculo</span>
                     <strong class="fs-5 text-uppercase">
                         <span class="badge bg-primary rounded-pill px-3">{{ usuario.vinculo|default:"Aluno" }}</span>
                     </strong>
                 </div>
+                
             </div>
         </div>
     </div>
@@ -66,20 +73,18 @@
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4">ID Empréstimo</th>
-                            <th>Id_chave</th>
-                            <th>Nome da Chave</th>
-                            <th>Setor / Local</th>
+                            <!-- Alterado de 'Chave' para 'Nome da Chave' para ficar mais claro -->
+                            <th>Chave</th>
+                            <th>Local</th>
                             <th>Status</th>
                             <th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tbody_chaves">
                         {% for emp in emprestimos_em_andamento %}
-                            <!-- Acessamos a chave de forma direta agora! -->
                             {% if emp.chave %}
                             <tr>
-                                <td class="ps-4 fw-bold text-secondary">#{{ emp.id }}</td>
-                                <td>{{ emp.chave.id|stringformat:"02d" }}</td>
+                                <td class="ps-4 fw-bold text-secondary">{{ emp.id }}</td>
                                 <td class="fw-bold">{{ emp.chave.nome }}</td>
                                 <td>{{ emp.chave.setor }}</td>
                                 <td><span class="badge bg-primary">Ativa</span></td>
@@ -92,7 +97,8 @@
                             {% endif %}
                         {% empty %}
                         <tr id="linha_vazia">
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <!-- colspan alterado de 6 para 5 devido à remoção da coluna -->
+                            <td colspan="5" class="text-center py-5 text-muted">
                                 <i class="fas fa-info-circle fs-4 mb-2 d-block"></i> Nenhuma chave bipada ainda...
                             </td>
                         </tr>
@@ -102,15 +108,23 @@
             </div>
         </div>
         
-        <div class="card-footer bg-white py-3 d-flex justify-content-end align-items-center">
-            <div>
-                <a href="{% url 'remover_emprestimo' usuario.id %}" class="btn btn-danger px-4 me-3 btn-lg shadow-sm" onclick="return confirm('Deseja cancelar o empréstimo e limpar a lista?');">
-                    <i class="fas fa-times me-2"></i> Cancelar
-                </a>
+        <!-- Rodapé ajustado com Grid Responsivo -->
+        <div class="card-footer bg-white py-3">
+            <div class="row g-2 justify-content-md-end">
                 
-                <button type="button" class="btn btn-success px-4 btn-lg shadow-sm" style="background-color: var(--ifpi-verde-escuro);" onclick="abrirModalFinalizar()">
-                    Confirmar <i class="fas fa-check-circle ms-2"></i>
-                </button>
+                <!-- 50% no celular (col-6), abraça o conteúdo no PC (col-md-auto) -->
+                <div class="col-6 col-md-auto">
+                    <a href="{% url 'remover_emprestimo' usuario.id %}" class="btn btn-danger shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1" onclick="return confirm('Deseja cancelar o empréstimo e limpar a lista?');">
+                        <i class="fas fa-times me-1 me-md-2"></i> Cancelar
+                    </a>
+                </div>
+                
+                <div class="col-6 col-md-auto">
+                    <button type="button" class="btn btn-success shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1" style="background-color: var(--ifpi-verde-escuro);" onclick="abrirModalFinalizar()">
+                        Confirmar <i class="fas fa-check-circle ms-1 ms-md-2"></i>
+                    </button>
+                </div>
+                
             </div>
         </div>
     </div>
