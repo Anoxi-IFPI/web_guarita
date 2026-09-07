@@ -10,15 +10,10 @@
 <div class="container-fluid mt-4">
     <div class="card shadow mb-4 border-0">
         
-        <!-- Cabeçalho Ajustado: Coluna no celular (flex-column), Linha no Desktop (flex-md-row) -->
-        <div class="card-header py-3 d-flex flex-column flex-md-row justify-content-md-between align-items-center gap-3" style="background-color: var(--ifpi-verde);">
-            
-            <h5 class="m-0 font-weight-bold text-white text-center text-md-start">
-                <i class="fas fa-users me-2"></i> Usuários Cadastrados
-            </h5>
-            
-            <!-- Botões alinhados lado a lado com gap-2 -->
-            <div class="d-flex flex-row gap-2">
+        <!-- Cabeçalho exato ao de chaves (textos encurtados para caberem no celular na mesma linha) -->
+        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: var(--ifpi-verde);">
+            <h5 class="m-0 font-weight-bold text-white"><i class="fas fa-users me-2"></i> Usuários Cadastrados </h5>
+            <div>
                 <a href="{% url 'cadastrar_usuario' %}" class="btn btn-light text-success fw-bold btn-sm shadow-sm">
                     <i class="fas fa-plus me-1"></i> Novo
                 </a>
@@ -26,10 +21,10 @@
                     <i class="fas fa-sync-alt me-1"></i> Recarregar
                 </a>
             </div>
-            
         </div>
         
         <div class="card-body">
+            <!-- Classe para a dica visual de rolagem horizontal -->
             <div class="table-responsive table-responsive-hint">
                 <table class="table table-bordered table-hover align-middle">
                     <thead class="table-light">
@@ -50,6 +45,7 @@
                             <td>{{ item.vinculo }}</td>
                             <td class="text-center">
                                 
+                                <!-- Botões das ações: Quadrados no celular, com texto no PC -->
                                 <div class="d-flex gap-2 justify-content-center">
                                     <a href="{% url 'editar_usuario' item.id %}" class="btn btn-sm text-white shadow-sm" style="background-color: #495057;" title="Editar">
                                         <i class="fas fa-edit"></i> <span class="d-none d-md-inline ms-1"></span>
