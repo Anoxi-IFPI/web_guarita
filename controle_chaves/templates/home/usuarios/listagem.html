@@ -10,10 +10,12 @@
 <div class="container-fluid mt-4">
     <div class="card shadow mb-4 border-0">
         
-        <!-- Cabeçalho exato ao de chaves (textos encurtados para caberem no celular na mesma linha) -->
+        <!-- Cabeçalho Corrigido: Título mais curto e botões com flex-nowrap -->
         <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: var(--ifpi-verde);">
-            <h5 class="m-0 font-weight-bold text-white"><i class="fas fa-users me-2"></i> Usuários Cadastrados </h5>
-            <div>
+            <h5 class="m-0 font-weight-bold text-white"><i class="fas fa-users me-2"></i> Usuários </h5>
+            
+            <!-- Adicionado d-flex flex-nowrap gap-2 para forçar os botões ficarem lado a lado sempre -->
+            <div class="d-flex flex-nowrap gap-2">
                 <a href="{% url 'cadastrar_usuario' %}" class="btn btn-light text-success fw-bold btn-sm shadow-sm">
                     <i class="fas fa-plus me-1"></i> Novo
                 </a>
