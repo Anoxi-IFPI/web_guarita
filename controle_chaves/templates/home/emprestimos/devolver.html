@@ -51,17 +51,17 @@
 
                 <hr class="mt-5 mb-4">
 
-                <!-- Botões responsivos: 50% cada no celular (col-6), lado a lado -->
-                <div class="row g-2">
+                <!-- Botões responsivos: 50% cada no celular, e tamanho natural no PC (separados nas pontas) -->
+                <div class="row g-2 justify-content-md-between">
                     
-                    <div class="col-6">
-                        <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1">
+                    <div class="col-6 col-md-auto">
+                        <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1 px-md-5">
                             <i class="fas fa-chevron-left me-1 me-md-2"></i> Voltar
                         </a>
                     </div>
                     
-                    <div class="col-6">
-                        <button type="submit" class="btn btn-success shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1" style="background-color: var(--ifpi-verde-escuro);" id="btn_confirmar">
+                    <div class="col-6 col-md-auto">
+                        <button type="submit" class="btn btn-success shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1 px-md-5" style="background-color: var(--ifpi-verde-escuro);" id="btn_confirmar">
                             Confirmar <i class="fas fa-check-circle ms-1 ms-md-2"></i>
                         </button>
                     </div>
@@ -71,6 +71,5 @@
         </div>
     </div>
 </div>
-
 <script src="{% static 'emprestimos/devolucao/devolver.js' %}?v=2"></script>
 {% endblock conteudo %}

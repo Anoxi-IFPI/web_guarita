@@ -44,10 +44,10 @@ function adicionarChave(codigo) {
 
         let tr = document.createElement('tr');
         tr.innerHTML = `
-            <td class="ps-4 fw-bold text-secondary">#${data.emprestimo_id}</td>
-            <td class="fw-bold">${data.chave_nome}</td>
-            <td>${data.chave_setor}</td>
-            <td><span class="badge bg-primary">Ativa</span></td>
+            <td class="text-center fw-bold text-secondary">#${data.emprestimo_id}</td>
+            <td class="text-center fw-bold text-truncate">${data.chave_nome}</td>
+            <td class="text-center text-truncate">${data.chave_setor}</td>
+            <td class="text-center"><span class="badge bg-primary">Ativa</span></td>
             <td class="text-center">
                 <a href="/emprestimos/remover-chave/${data.emprestimo_id}/${data.chave_id}/" class="btn btn-sm btn-outline-danger" title="Remover">
                     <i class="fas fa-trash-alt"></i>
