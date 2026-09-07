@@ -45,7 +45,6 @@ function adicionarChave(codigo) {
         let tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="ps-4 fw-bold text-secondary">#${data.emprestimo_id}</td>
-            <td>${String(data.chave_id).padStart(2, '0')}</td>
             <td class="fw-bold">${data.chave_nome}</td>
             <td>${data.chave_setor}</td>
             <td><span class="badge bg-primary">Ativa</span></td>
@@ -55,7 +54,7 @@ function adicionarChave(codigo) {
                 </a>
             </td>
         `;
-        
+                
         tbodyChaves.prepend(tr);
     })
     .catch(error => {
