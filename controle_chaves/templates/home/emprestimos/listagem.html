@@ -1,40 +1,63 @@
 {% extends 'home/base.html' %}
+{% load static %} <!-- Não esqueça de carregar as tags estáticas -->
 
 {% block titulo %} Empréstimos Realizados {% endblock %}
 
 {% block conteudo %}
+<!-- Link para o arquivo CSS local (crie este arquivo no seu diretório static) -->
+<link rel="stylesheet" href="{% static 'emprestimos/listagem/listagem.css' %}">
+
 <div class="container-fluid mt-4">
     <div class="card shadow mb-4 border-0">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: var(--ifpi-verde);">
-            <h5 class="m-0 font-weight-bold text-white"><i class="fas fa-clipboard-list me-2"></i> Registro de Empréstimos</h5>
-            <div>
-                <a href="{% url 'devolver_emprestimo' %}" class="btn btn-info text-dark fw-bold btn-sm shadow-sm me-1">
-                    <i class="fas fa-undo-alt me-1"></i> Devolver
-                </a>
+        
+      <!-- Cabeçalho responsivo com Grid -->
+        <div class="card-header py-3" style="background-color: var(--ifpi-verde);">
+            <div class="row align-items-center g-2">
                 
-                <!-- Repassar agora com a cor original dele na tela rápida (Laranja/Warning) -->
-                <a href="#" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm me-1">
-                    <i class="fas fa-exchange-alt me-1"></i> Repassar
-                </a>
+                <!-- Título: Removido o text-center. Agora fica sempre à esquerda (text-start) -->
+                <div class="col-12 col-md text-start mb-2 mb-md-0">
+                    <h5 class="m-0 font-weight-bold text-white text-nowrap">
+                        <i class="fas fa-clipboard-list me-2"></i> Empréstimos Listados
+                    </h5>
+                </div>
                 
-                <a href="{% url 'cadastrar_emprestimo' %}" class="btn btn-light text-success fw-bold btn-sm shadow-sm">
-                    <i class="fas fa-plus me-1"></i> Novo
-                </a>
+                <!-- Grupo 2x2 no celular (col-6 = 50%), alinhados lado a lado no PC (col-md-auto) -->
+                <div class="col-6 col-md-auto">
+                    <a href="{% url 'devolver_emprestimo' %}" class="btn btn-info text-dark fw-bold btn-sm shadow-sm w-100 text-nowrap">
+                        <i class="fas fa-undo-alt me-1"></i> Devolver
+                    </a>
+                </div>
                 
-                <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary btn-sm shadow-sm text-white">
-                    <i class="fas fa-sync-alt me-1"></i> Recarregar
-                </a>
+                <div class="col-6 col-md-auto">
+                    <a href="#" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm w-100 text-nowrap">
+                        <i class="fas fa-exchange-alt me-1"></i> Repassar
+                    </a>
+                </div>
+                
+                <div class="col-6 col-md-auto">
+                    <a href="{% url 'cadastrar_emprestimo' %}" class="btn btn-light text-success fw-bold btn-sm shadow-sm w-100 text-nowrap">
+                        <i class="fas fa-plus me-1"></i> Novo
+                    </a>
+                </div>
+                
+                <div class="col-6 col-md-auto">
+                    <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary btn-sm shadow-sm text-white w-100 text-nowrap">
+                        <i class="fas fa-sync-alt me-1"></i> Recarregar
+                    </a>
+                </div>
+                
             </div>
         </div>
         
         <div class="card-body">
-            <div class="table-responsive">
+            <!-- Adicionada a classe table-responsive-hint para a dica visual no mobile -->
+            <div class="table-responsive table-responsive-hint">
                 <table class="table table-bordered table-hover align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
                             <th>Cod_Chave</th>
-                            <th>Setor (Chave)</th>
+                            <th>Setor</th>
                             <th>Usuário</th>
                             <th>Matrícula</th>
                             <th>Data e Hora</th>
@@ -42,12 +65,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- 1º LOOP: Varre os empréstimos (O 2º loop de chaves foi removido!) -->
                         {% for item in lista %}
                             <tr>
                                 <td><strong>{{ item.id }}</strong></td>
                                 
-                                <!-- Verificamos se existe uma chave vinculada diretamente -->
                                 {% if item.chave %}
                                     <td>{{ item.chave.id|stringformat:"02d" }}</td>
                                     <td class="text-dark">{{ item.chave.nome }} - {{ item.chave.setor }}</td>
