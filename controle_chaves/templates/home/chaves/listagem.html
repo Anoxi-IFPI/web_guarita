@@ -10,10 +10,11 @@
 <div class="container-fluid mt-4">
     <div class="card shadow mb-4 border-0">
         
-        <!-- Cabeçalho intocado conforme solicitado -->
-        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: var(--ifpi-verde);">
-            <h5 class="m-0 font-weight-bold text-white"><i class="fas fa-key me-2"></i> Acervo de Chaves</h5>
-            <div>
+        <!-- Cabeçalho ajustado com flex-nowrap para nunca quebrar os botões no celular -->
+        <div class="card-header py-3 d-flex justify-content-between align-items-center flex-nowrap" style="background-color: var(--ifpi-verde);">
+            <h5 class="m-0 font-weight-bold text-white text-truncate me-2"><i class="fas fa-key me-2"></i> Chaves</h5>
+            
+            <div class="d-flex flex-nowrap gap-2">
                 <a href="{% url 'cadastrar_chave' %}" class="btn btn-light text-success fw-bold btn-sm shadow-sm">
                     <i class="fas fa-plus me-1"></i> Nova
                 </a>
@@ -79,4 +80,16 @@
         </div>
     </div>
 </div>
+
+<!-- Div invisível para pegar as mensagens -->
+{% if messages %}
+    <div id="django-messages-container" class="d-none">
+        {% for message in messages %}
+            <div class="django-message" data-text="{{ message }}" data-tags="{{ message.tags }}"></div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- Importa o mesmo arquivo JS para disparar o alerta flutuante de sucesso na listagem -->
+<script src="{% static 'chaves/forms/forms.js' %}?v=1"></script>
 {% endblock %}

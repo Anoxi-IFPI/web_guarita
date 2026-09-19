@@ -1,4 +1,5 @@
 {% extends "home/base.html" %}
+{% load static %}
 
 {% block titulo %}Novo Usuário{% endblock %}
 
@@ -58,17 +59,15 @@
 
                         <hr class="mt-4 mb-4">
 
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{% url 'listar_usuario' %}" class="btn btn-secondary shadow-sm px-4 text-white">
-                                     <i class="fas fa-chevron-left me-2"></i> Voltar
+                        <!-- Botões responsivos usando d-grid no mobile e d-md-flex no desktop -->
+                        <div class="d-grid gap-2 d-md-flex">
+                            <a href="{% url 'listar_usuario' %}" class="btn btn-secondary shadow-sm px-4 text-white order-last order-md-first me-md-auto">
+                                <i class="fas fa-chevron-left me-2"></i> Voltar
                             </a>
-
-                            <div>
-                                <button type="reset" class="btn btn-light me-2">Limpar</button>
-                                <button type="submit" class="btn btn-success px-5 shadow-sm" style="background-color: var(--ifpi-verde-escuro);">
-                                    <i class="fas fa-save me-2"></i> Finalizar
-                                </button>
-                            </div>
+                            <button type="reset" class="btn btn-light px-4">Limpar</button>
+                            <button type="submit" class="btn btn-success px-5 shadow-sm" style="background-color: var(--ifpi-verde-escuro);">
+                                <i class="fas fa-save me-2"></i> Finalizar
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -76,4 +75,20 @@
         </div>
     </div>
 </div>
+
+<!-- Div invisível para passar as mensagens do Django para o JavaScript -->
+{% if messages %}
+    <div id="django-messages-container" class="d-none">
+        {% for message in messages %}
+            <div class="django-message" data-text="{{ message }}" data-tags="{{ message.tags }}"></div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- Import do SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Seu script customizado -->
+<script src="{% static 'usuarios/forms/forms.js' %}?v=2"></script>
+
 {% endblock conteudo %}

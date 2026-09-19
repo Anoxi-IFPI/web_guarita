@@ -79,4 +79,18 @@
         </div>
     </div>
 </div>
+
+<!-- Div invisível para pegar as mensagens (Sucesso ao Salvar/Editar/Excluir) -->
+{% if messages %}
+    <div id="django-messages-container" class="d-none">
+        {% for message in messages %}
+            <div class="django-message" data-text="{{ message }}" data-tags="{{ message.tags }}"></div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- Import do SweetAlert2 e do JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'usuarios/forms/forms.js' %}?v=3"></script>
+
 {% endblock %}

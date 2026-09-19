@@ -1,5 +1,5 @@
 {% extends "home/base.html" %}
-
+{% load static %}
 {% block titulo %}Nova Chave{% endblock %}
 
 {% block conteudo %}
@@ -33,19 +33,15 @@
 
                         <hr class="mt-4 mb-4">
 
-                        <div class="d-flex flex-column flex-md-row justify-content-md-between gap-3">
-                            
-                            <a href="{% url 'listar_chave' %}" class="btn btn-secondary shadow-sm px-4 text-white order-2 order-md-1">
+                        <div class="d-grid gap-2 d-md-flex">
+                            <a href="{% url 'listar_chave' %}" class="btn btn-secondary shadow-sm px-4 text-white order-last order-md-first me-md-auto">
                                 <i class="fas fa-chevron-left me-2"></i> Voltar
                             </a>
                             
-                            <div class="d-flex flex-column flex-md-row gap-2 order-1 order-md-2">
-                                <button type="reset" class="btn btn-light">Limpar</button>
-                                <button type="submit" class="btn btn-success px-md-5 shadow-sm" style="background-color: var(--ifpi-verde-escuro);">
-                                    <i class="fas fa-save me-2"></i> {% if form.instance.pk %}Salvar{% else %}Finalizar{% endif %}
-                                </button>
-                            </div>
-
+                            <button type="reset" class="btn btn-light px-4">Limpar</button>
+                            <button type="submit" class="btn btn-success px-5 shadow-sm" style="background-color: var(--ifpi-verde-escuro);">
+                                <i class="fas fa-save me-2"></i> {% if form.instance.pk %}Salvar{% else %}Finalizar{% endif %}
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -53,4 +49,16 @@
         </div>
     </div>
 </div>
+
+<!-- Div invisível para passar as mensagens do Django para o JavaScript -->
+{% if messages %}
+    <div id="django-messages-container" class="d-none">
+        {% for message in messages %}
+            <div class="django-message" data-text="{{ message }}" data-tags="{{ message.tags }}"></div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- Importa o arquivo JS (certifique-se de colar aquele código do alerta flutuante nele) -->
+<script src="{% static 'chaves/forms/forms.js' %}?v=1"></script>
 {% endblock conteudo %}
