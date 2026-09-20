@@ -106,9 +106,9 @@
             <button class="btn-taskbar btn-repassar">
                 <i class="fas fa-exchange-alt"></i> Repassar
             </button>
-            <button class="btn-taskbar btn-historico">
+            <a href="{% url 'painel_historico' %}" class="btn-taskbar btn-historico" style="text-decoration: none;">
                 <i class="fas fa-history"></i> Histórico
-            </button>
+            </a>
 
             <a href="{% url 'listar_emprestimos' %}" class="btn-taskbar" style="background-color: var(--ifpi-verde); margin-left: 8px;">
                 <i class="fas fa-list-ul"></i> Empréstimos Ativos

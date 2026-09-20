@@ -33,8 +33,13 @@ urlpatterns = [
     path('emprestimos/remover-chave/<int:emprestimo_id>/<int:chave_id>/', views.remover_chave_emprestimo, name='remover_chave_emprestimo'),
     path('emprestimos/remover/<int:id>/', views.remover_emprestimo, name='remover_emprestimo'),
     
-    # NOVAS ROTAS
+    #  ROTAS DE DEVOLUÇÃO
     path('api/buscar-chave-devolucao/', views.api_buscar_chave_devolucao, name='api_buscar_chave_devolucao'),
     path('emprestimos/devolver/', views.devolver_emprestimo, name='devolver_emprestimo'),
     # path('emprestimos/repassar/<int:id>/', views.repassar_emprestimo, name='repassar_emprestimo'),
+    
+    
+    
+    #ROTA DE HITÓRICO
+    path('historico/', views.painel_historico, name='painel_historico'),
 ]

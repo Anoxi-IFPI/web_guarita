@@ -12,6 +12,7 @@ from django.http import JsonResponse
 import barcode
 from barcode.writer import ImageWriter
 from django.shortcuts import render
+from django.db.models import Q
 
 
 
@@ -284,6 +285,21 @@ def cadastrar_emprestimo(request):
     
     return render(request, 'home/emprestimos/forms.html', {'form': form})
 
+# def adicionar_chaves_emprestimo(request, id):
+#     try:
+#         usuario = Usuario.objects.get(id=id)
+#     except Usuario.DoesNotExist:
+#         return redirect('listar_emprestimos')
+        
+#     limite = timezone.now() - timedelta(minutes=30)
+#     emprestimos_em_andamento = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO', data__gte=limite).order_by('-id')
+
+#     contexto = {
+#         'usuario': usuario,
+#         'emprestimos_em_andamento': emprestimos_em_andamento,
+#     }
+#     return render(request, 'home/emprestimos/emprestimo.html', contexto)
+
 def adicionar_chaves_emprestimo(request, id):
     try:
         usuario = Usuario.objects.get(id=id)
@@ -291,11 +307,16 @@ def adicionar_chaves_emprestimo(request, id):
         return redirect('listar_emprestimos')
         
     limite = timezone.now() - timedelta(minutes=30)
+    # 1. Busca o que ele está bipando agora (Rascunho)
     emprestimos_em_andamento = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO', data__gte=limite).order_by('-id')
+
+    # 2. NOVA BUSCA: Pega as chaves que JÁ ESTÃO com ele (Ativas)
+    chaves_em_posse = Emprestimo.objects.filter(usuario=usuario, status__in=['NOVO', 'REPASSADO']).order_by('-data')
 
     contexto = {
         'usuario': usuario,
         'emprestimos_em_andamento': emprestimos_em_andamento,
+        'chaves_em_posse': chaves_em_posse, # Enviando para o HTML
     }
     return render(request, 'home/emprestimos/emprestimo.html', contexto)
 
@@ -400,112 +421,6 @@ def remover_chave_emprestimo(request, emprestimo_id, chave_id):
     except Emprestimo.DoesNotExist:
         return redirect('listar_emprestimos')
     
-# # ==========================================
-# # VIEWS PARA GESTÃO DE EMPRÉSTIMOS (Lógica de 1 Chave = 1 Empréstimo Sequencial)
-# # ========================================== 
-
-
-# # ==========================================
-# # VIEWS PARA GESTÃO DE EMPRÉSTIMOS
-# # ========================================== 
-
-# def listar_emprestimos(request):
-#     emprestimos = Emprestimo.objects.filter(status__in=['NOVO', 'REPASSADO'])
-#     return render(request, 'home/emprestimos/listagem.html', {'lista': emprestimos})
-
-# def cadastrar_emprestimo(request):
-#     if request.method == 'POST':
-#         form = EmprestimoForm(request.POST)
-#         if form.is_valid():
-#             matricula_digitada = form.cleaned_data['matricula']
-#             try:
-#                 usuario_encontrado = Usuario.objects.get(matricula=matricula_digitada)
-#             except Usuario.DoesNotExist:
-#                 form.add_error('matricula', 'Usuário não encontrado.')
-#             else:
-#                 # ====== VASSOURADA ======
-#                 Emprestimo.objects.filter(usuario=usuario_encontrado, status='SOLICITADO').delete()
-#                 return redirect('adicionar_chaves_emprestimo', id=usuario_encontrado.id)
-#     else:
-#         form = EmprestimoForm()
-#     return render(request, 'home/emprestimos/forms.html', {'form': form})
-
-# def adicionar_chaves_emprestimo(request, id):
-#     usuario = get_object_or_404(Usuario, id=id)
-#     limite = timezone.now() - timedelta(minutes=30)
-#     emprestimos_em_andamento = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO', data__gte=limite).order_by('-id')
-
-#     contexto = {
-#         'usuario': usuario,
-#         'emprestimos_em_andamento': emprestimos_em_andamento,
-#     }
-#     return render(request, 'home/emprestimos/detalhes.html', contexto)
-
-# def api_adicionar_chave_emprestimo(request):
-#     codigo = request.GET.get('codigo', '').strip()
-#     usuario_id = request.GET.get('usuario_id', '').strip()
-
-#     if not codigo or not usuario_id:
-#         return JsonResponse({'erro': 'Código ausente.'}, status=400)
-
-#     if not codigo.isdigit():
-#         return JsonResponse({'erro': 'Erro: Código inválido. Digite apenas números!'}, status=200)
-
-#     try:
-#         usuario = get_object_or_404(Usuario, id=usuario_id)
-#         chave_encontrada = get_object_or_404(Chave, id=codigo)
-
-#         chave_ativa = Emprestimo.objects.filter(chaves=chave_encontrada, status__in=['NOVO', 'REPASSADO']).first()
-#         if chave_ativa:
-#             return JsonResponse({'erro': f'Acesso negado: Chave já está com {chave_ativa.usuario.nome}!'}, status=200)
-            
-#         chave_rascunho = Emprestimo.objects.filter(chaves=chave_encontrada, status='SOLICITADO').first()
-#         if chave_rascunho:
-#             return JsonResponse({'erro': 'Esta chave já está na sua lista!'}, status=200)
-
-#         novo_emprestimo = Emprestimo.objects.create(usuario=usuario, status=Emprestimo.Status.SOLICITADO)
-#         novo_emprestimo.chaves.add(chave_encontrada)
-
-#         return JsonResponse({
-#             'sucesso': True,
-#             'emprestimo_id': novo_emprestimo.id,
-#             'chave_id': chave_encontrada.id,
-#             'chave_nome': chave_encontrada.nome,
-#             'chave_setor': chave_encontrada.setor
-#         })
-
-#     except Chave.DoesNotExist:
-#         return JsonResponse({'erro': 'Chave não encontrada!'}, status=200)
-
-# def finalizar_emprestimo(request, id):
-#     usuario = get_object_or_404(Usuario, id=id)
-    
-#     rascunhos = Emprestimo.objects.filter(usuario=usuario, status='SOLICITADO')
-#     chaves_salvas = [emp.chaves.first() for emp in rascunhos if emp.chaves.first()]
-#     quantidade = len(chaves_salvas)
-
-#     if quantidade > 0:
-#         rascunhos.update(status='NOVO')
-#         contexto = {
-#             'usuario': usuario,
-#             'chaves_salvas': chaves_salvas,
-#             'quantidade': quantidade,
-#             'data_atual': timezone.now()
-#         }
-#         return render(request, 'home/emprestimos/sucesso.html', contexto)
-#     else:
-#         messages.error(request, 'Nenhuma chave encontrada para finalizar.')
-#         return redirect('listar_emprestimos')
-
-# def remover_emprestimo(request, id):
-#     Emprestimo.objects.filter(usuario_id=id, status='SOLICITADO').delete()
-#     return redirect('listar_emprestimos')
-
-# def remover_chave_emprestimo(request, emprestimo_id, chave_id):
-#     emprestimo = get_object_or_404(Emprestimo, id=emprestimo_id)
-#     usuario_id = emprestimo.usuario.id
-#     emprestimo.delete() 
-#     return redirect('adicionar_chaves_emprestimo', id=usuario_id)
 
 # ==========================================
 # VIEWS PARA NOVA DEVOLUÇÃO INSTANTÂNEA
@@ -587,43 +502,57 @@ def devolver_emprestimo(request):
     # Acesso normal à página dedicada de devolução (GET via Painel Admin)
     return render(request, 'home/emprestimos/devolver.html')
 
+# ==========================================
+# VIEWS PARA ACOMPANHAMENTO E HITÓRICO DE EMPRESTIMOS
+# ==========================================
 
-# def repassar_emprestimo(request, id):
-#     try:
-#         emprestimo_atual = Emprestimo.objects.get(id=id)
-#     except Emprestimo.DoesNotExist:
-#         messages.error(request, 'Empréstimo não encontrado.')
-#         return redirect('listar_emprestimos')
+def painel_historico(request):
+    hoje = timezone.now().date()
+    
+    # Busca registros que foram CRIADOS hoje OU DEVOLVIDOS hoje
+    movimentacoes_do_dia = Emprestimo.objects.filter(
+        Q(data__date=hoje) | Q(data_devolucao__date=hoje)
+    ).exclude(status='SOLICITADO')
 
-#     erro = None
-#     if request.method == 'POST':
-#         matricula_novo = request.POST.get('matricula')
-#         try:
-#             novo_usuario = Usuario.objects.get(matricula=matricula_novo)
+    movimentos_list = []
+    
+    for mov in movimentacoes_do_dia:
+        
+        # 1. EVENTO DE SAÍDA DA CHAVE (Empréstimo ou Repasse recebido)
+        if mov.data and mov.data.date() == hoje:
+            movimentos_list.append({
+                'id': str(mov.id), 
+                'cod': mov.chave.nome if mov.chave else 'S/N', # CORRIGIDO AQUI PARA .nome
+                'setor': getattr(mov.chave, 'setor', 'Setor não informado'),
+                'usuario': str(mov.usuario), 
+                'matricula': getattr(mov.usuario, 'matricula', 'S/N'),
+                'tipo': 'emprestimo',
+                'hora': mov.data.strftime('%H:%M'),
+                'datetime_obj': mov.data 
+            })
+
+        # 2. EVENTO DE ENTRADA DA CHAVE (Devolução para guarita ou Repasse para outro)
+        if mov.data_devolucao and mov.data_devolucao.date() == hoje:
+            tipo_evento = 'repassado' if mov.status == 'REPASSADO' else 'devolvido'
             
-#             if novo_usuario == emprestimo_atual.usuario:
-#                 erro = "Você não pode repassar a chave para você mesmo!"
-#             else:
-#                 # 1. Finaliza o registro do usuário atual
-#                 emprestimo_atual.status = Emprestimo.Status.DEVOLVIDO
-#                 emprestimo_atual.save()
-                
-#                 # 2. Cria um novo registro para a nova pessoa com status REPASSADO
-#                 novo_emprestimo = Emprestimo.objects.create(
-#                     usuario=novo_usuario,
-#                     status=Emprestimo.Status.REPASSADO
-#                 )
-                
-#                 # 3. Transfere as chaves para o novo registro
-#                 for chave in emprestimo_atual.chaves.all():
-#                     novo_emprestimo.chaves.add(chave)
-                    
-#                 messages.success(request, f'Chave repassada para {novo_usuario.nome} com sucesso!')
-#                 return redirect('listar_emprestimos')
-                
-#         except Usuario.DoesNotExist:
-#             erro = "Usuário destino não encontrado com esta matrícula."
+            movimentos_list.append({
+                'id': str(mov.id),
+                'cod': mov.chave.nome if mov.chave else 'S/N', # JÁ ESTAVA CORRETO AQUI
+                'setor': getattr(mov.chave, 'setor', 'Setor não informado'),
+                'usuario': str(mov.usuario), 
+                'matricula': getattr(mov.usuario, 'matricula', 'S/N'),
+                'tipo': tipo_evento,
+                'hora': mov.data_devolucao.strftime('%H:%M'),
+                'datetime_obj': mov.data_devolucao
+            })
 
-#     return render(request, 'home/emprestimos/repassar.html', {'emprestimo': emprestimo_atual, 'erro': erro})
+    movimentos_list.sort(key=lambda x: x['datetime_obj'], reverse=True)
 
+    for m in movimentos_list:
+        del m['datetime_obj']
 
+    context = {
+        'movimentos_json': movimentos_list
+    }
+    
+    return render(request, 'home/historico/historico.html', context)

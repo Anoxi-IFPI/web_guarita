@@ -6,38 +6,31 @@
 {% block conteudo %}
 <link rel="stylesheet" href="{% static 'emprestimos/detalhes/detalhes.css' %}">
 
-
 <div class="container-fluid mt-2"> 
     
     <input type="hidden" id="hidden_usuario_id" value="{{ usuario.id }}">
             
-  <!-- Painel de Identificação do Usuário -->
-    <div class="card shadow mb-4 border-0">
+    <!-- Painel de Identificação do Usuário -->
+    <div class="card shadow mb-3 border-0">
         <div class="card-header text-white fw-bold py-3" style="background-color: var(--ifpi-verde);">
             <h5 class="mb-0"><i class="fas fa-id-badge me-2"></i> Atendimento: {{ usuario.matricula }}</h5>
         </div>
         <div class="card-body p-4 bg-light">
-            <!-- Removido o text-center. Agora usa text-start para alinhar tudo à esquerda sempre -->
             <div class="row text-start">
-                
-                <!-- mb-3 adicionado para dar um respiro melhor entre os itens no celular -->
                 <div class="col-md-6 mb-3 mb-md-0">
                     <span class="text-muted d-block small">Usuário</span>
                     <strong class="fs-5">{{ usuario.nome }}</strong>
                 </div>
-                
                 <div class="col-md-3 mb-3 mb-md-0">
                     <span class="text-muted d-block small">Matrícula</span>
                     <strong class="fs-5">{{ usuario.matricula }}</strong>
                 </div>
-                
                 <div class="col-md-3">
                     <span class="text-muted d-block small mb-1">Vínculo</span>
                     <strong class="fs-5 text-uppercase">
                         <span class="badge bg-primary rounded-pill px-3">{{ usuario.vinculo|default:"Aluno" }}</span>
                     </strong>
                 </div>
-                
             </div>
         </div>
     </div>
@@ -63,17 +56,69 @@
         </div>
     </div>
 
+    <!-- Tabela de Chaves Lidas & Atalhos -->
     <div class="card shadow mb-4 border-0">
-        <div class="card-header bg-white py-3">
-            <h6 class="mb-0 fw-bold text-secondary"><i class="fas fa-list me-2"></i> Chaves Lidas</h6>
+        
+        <!-- CABEÇALHO DA TABELA COM OS 3 BOTÕES DE ATALHO -->
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2" style="border-bottom: 1px solid var(--border-color);">
+            <h6 class="mb-0 fw-bold text-secondary">
+                <i class="fas fa-list me-2"></i> Chaves Lidas
+            </h6>
+            
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Botão Meus Empréstimos -->
+                <button class="btn btn-sm fw-bold shadow-sm d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePosse" aria-expanded="false" aria-controls="collapsePosse" style="background-color: var(--ifpi-verde); color: white; border-radius: 8px;">
+                    <i class="fas fa-list-ul"></i> Meus Empréstimos 
+                    <span class="badge bg-white text-success rounded-circle" style="font-size: 11px;">{{ chaves_em_posse|length }}</span>
+                </button>
+                
+                <!-- Botão Devolver (Padronizado com a listagem) -->
+                <a href="{% url 'devolver_emprestimo' %}" class="btn btn-info text-dark fw-bold btn-sm shadow-sm d-flex align-items-center gap-2" style="border-radius: 8px;">
+                    <i class="fas fa-undo-alt"></i> Devolver
+                </a>
+                
+                <!-- Botão Repassar (Padronizado com a listagem) -->
+                <button type="button" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm d-flex align-items-center gap-2" style="border-radius: 8px;">
+                    <i class="fas fa-exchange-alt"></i> Repassar
+                </button>
+            </div>
         </div>
+
+        <!-- ========================================== -->
+        <!-- ÁREA COLAPSÁVEL: CHAVES EM POSSE           -->
+        <!-- ========================================== -->
+        <div class="collapse" id="collapsePosse">
+            <div class="p-0" style="background-color: #f8f9fa; border-bottom: 2px dashed #dee2e6;">
+                {% if chaves_em_posse %}
+                    {% for posse in chaves_em_posse %}
+                    <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-left: 4px solid #a5d6a7;">
+                        <div class="d-flex align-items-center gap-3">
+                            <!-- Hora -->
+                            <span class="text-muted fw-bold d-flex align-items-center gap-1" style="font-size: 13px; min-width: 60px;">
+                                <i class="far fa-clock" style="font-size: 11px;"></i> {{ posse.data|date:"H:i" }}
+                            </span>
+                            <!-- Nome da Chave e Setor (Sem ID, para alinhar com a hora) -->
+                            <div class="fw-bold" style="color: var(--text-dark); font-size: 15px;">
+                                {{ posse.chave.nome }} <span class="text-muted fw-normal ms-1">— {{ posse.chave.setor }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center p-4 text-muted">
+                        <i class="fas fa-inbox fs-4 mb-2 d-block text-secondary"></i>
+                        Nenhuma chave em posse no momento.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- ========================================== -->
+
         <div class="card-body p-0">
             <div class="table-responsive">
-                <!-- table-layout: fixed força o navegador a respeitar as larguras que definimos -->
                 <table class="table table-hover align-middle mb-0" id="tabela_chaves" style="min-width: 600px; table-layout: fixed;">
                     <thead class="table-light">
                         <tr>
-                            <!-- 5 colunas divididas igualmente (20% cada) e todas centralizadas -->
                             <th class="text-center" style="width: 20%;">ID Empréstimo</th>
                             <th class="text-center" style="width: 20%;">Nome da Chave</th>
                             <th class="text-center" style="width: 20%;">Local</th>
@@ -108,28 +153,24 @@
             </div>
         </div>
         
-        <!-- Rodapé ajustado com Grid Responsivo -->
+        <!-- RODAPÉ ORIGINAL: CANCELAR E CONFIRMAR (INTACTO) -->
         <div class="card-footer bg-white py-3">
             <div class="row g-2 justify-content-md-end">
-                
-                <!-- 50% no celular (col-6), abraça o conteúdo no PC (col-md-auto) -->
                 <div class="col-6 col-md-auto">
                     <a href="{% url 'remover_emprestimo' usuario.id %}" class="btn btn-danger shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1" onclick="return confirm('Deseja cancelar o empréstimo e limpar a lista?');">
                         <i class="fas fa-times me-1 me-md-2"></i> Cancelar
                     </a>
                 </div>
-                
                 <div class="col-6 col-md-auto">
                     <button type="button" class="btn btn-success shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1" style="background-color: var(--ifpi-verde-escuro);" onclick="abrirModalFinalizar()">
                         Confirmar <i class="fas fa-check-circle ms-1 ms-md-2"></i>
                     </button>
                 </div>
-                
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO DO SEU VÍDEO -->
+    <!-- MODAL DE CONFIRMAÇÃO -->
     <div class="modal fade" id="modalConfirmacao" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
