@@ -132,7 +132,7 @@
                         {% for emp in emprestimos_em_andamento %}
                             {% if emp.chave %}
                             <tr>
-                                <td class="text-center fw-bold text-secondary">#{{ emp.id }}</td>
+                                <td class="text-center fw-bold text-secondary">{{ emp.id }}</td>
                                 <td class="text-center fw-bold text-truncate">{{ emp.chave.nome }}</td>
                                 <td class="text-center text-truncate">{{ emp.chave.setor }}</td>
                                 <td class="text-center"><span class="badge bg-primary">Ativa</span></td>

@@ -4,18 +4,18 @@
 
 {% block conteudo %}
 <!--Arquivo local pasta de devolução estática-->
-<link rel="stylesheet" href="{% static 'emprestimos/devolucao/devolver.css' %}">
+<link rel="stylesheet" href="{% static 'emprestimos/devolucao/devolver.css' %}?v=4">
 
 <div class="container-fluid mt-2"> 
     
-    <!-- Painel de Identificação (Inicia oculto até a primeira chave ser lida) -->
+    <!-- Painel de Identificação -->
     <div id="painel_usuario" class="card shadow mb-4 border-0 d-none">
         <div class="card-header py-3 text-white fw-bold" style="background-color: var(--ifpi-verde);">
             <h5 class="m-0"><i class="fas fa-user-check me-2"></i> Usuário Identificado</h5>
         </div>
         <div class="card-body p-4 bg-light">
-            <div class="row text-center text-md-start">
-                <div class="col-md-6 mb-2 mb-md-0">
+            <div class="row text-start">
+                <div class="col-md-6 mb-3 mb-md-0">
                     <span class="text-muted d-block small">Titular Atual</span>
                     <strong class="fs-4" id="ui_usuario_nome">---</strong>
                 </div>
@@ -33,14 +33,15 @@
             <form method="POST" action="{% url 'devolver_emprestimo' %}" id="formDevolucao">
                 {% csrf_token %}
                 
-                <div class="mb-5 mt-2 text-center">
+                <div class="mb-4 mt-2 text-center">
                     <label class="form-label fw-bold fs-4 text-dark mb-4">
                         Passe a Chave no Leitor ou digite o código para <span class="text-success">DEVOLVER</span>
                     </label>
-                    <!-- Importante: manter name="codigo" para o plano B -->
                     <input type="text" name="codigo" id="input_leitor" class="input-grande" placeholder="Aguardando leitura do código..." autofocus autocomplete="off">
-                    <div id="alerta_container" class="mt-4"></div>
                 </div>
+
+                <!-- ALERTA FORA DA DIV CENTRALIZADA PARA FICAR JUSTIFICADO -->
+                <div id="alerta_container" class="mb-4"></div>
 
                 <div class="mb-5">
                     <h5 class="fw-bold text-secondary mb-3">Resumo das Chaves Devolvidas:</h5>
@@ -51,18 +52,18 @@
 
                 <hr class="mt-5 mb-4">
 
-                <!-- Botões responsivos: 50% cada no celular, e tamanho natural no PC (separados nas pontas) -->
-                <div class="row g-2 justify-content-md-between">
+                <!-- Botões: 100% de largura empilhados no mobile, e separados nas pontas no PC -->
+                <div class="row g-3 justify-content-md-between">
                     
-                    <div class="col-6 col-md-auto">
-                        <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1 px-md-5">
-                            <i class="fas fa-chevron-left me-1 me-md-2"></i> Voltar
+                    <div class="col-12 col-md-auto order-2 order-md-1">
+                        <a href="{% url 'listar_emprestimos' %}" class="btn btn-secondary shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center px-4">
+                            <i class="fas fa-chevron-left me-2"></i> Voltar
                         </a>
                     </div>
                     
-                    <div class="col-6 col-md-auto">
-                        <button type="submit" class="btn btn-success shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1 px-md-5" style="background-color: var(--ifpi-verde-escuro);" id="btn_confirmar">
-                            Confirmar <i class="fas fa-check-circle ms-1 ms-md-2"></i>
+                    <div class="col-12 col-md-auto order-1 order-md-2">
+                        <button type="submit" class="btn btn-success shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center px-4" style="background-color: var(--ifpi-verde-escuro);" id="btn_confirmar">
+                            Confirmar <i class="fas fa-check-circle ms-2"></i>
                         </button>
                     </div>
                     
@@ -71,5 +72,6 @@
         </div>
     </div>
 </div>
-<script src="{% static 'emprestimos/devolucao/devolver.js' %}?v=2"></script>
+<!-- ?v=4 FORÇA A ATUALIZAÇÃO DO CACHE -->
+<script src="{% static 'emprestimos/devolucao/devolver.js' %}?v=4"></script>
 {% endblock conteudo %}
