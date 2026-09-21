@@ -1,0 +1,235 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block titulo %}Consulta de Empréstimos{% endblock %}
+
+{% block conteudo %}
+<style>
+    /* Estilos específicos para os badges de status para ficarem idênticos ao design original */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        display: inline-block;
+    }
+    .status-ativo {
+        background-color: #e7f0ff;
+        color: #0d6efd;
+        border: 1px solid #b6d4fe;
+    }
+    .status-devolvido {
+        background-color: #e8f5e9;
+        color: #198754;
+        border: 1px solid #a3cfbb;
+    }
+    .status-repassado {
+        background-color: #fff3cd;
+        color: #fd7e14;
+        border: 1px solid #ffda6a;
+    }
+    
+    .table-custom th {
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="container-fluid mt-2">
+    <!-- Card Principal de Consulta -->
+    <div class="card shadow mb-4 border-0">
+        <!-- Cabeçalho do Card -->
+        <div class="card-header py-3 text-white fw-bold d-flex justify-content-between align-items-center flex-wrap gap-2" style="background-color: var(--ifpi-verde, #1b8c3e);">
+            <h5 class="m-0 d-flex align-items-center gap-2">
+                <i class="fas fa-search"></i> Consulta de Empréstimos
+            </h5>
+            <button class="btn btn-light btn-sm d-flex align-items-center gap-2 shadow-sm fw-bold" style="color: var(--ifpi-verde-escuro, #146c2e);" onclick="window.location.reload();">
+                <i class="fas fa-sync-alt"></i> Atualizar
+            </button>
+        </div>
+
+        <div class="card-body p-4 bg-light">
+            
+            <!-- Card Interno: Filtros de Pesquisa -->
+            <div class="bg-white p-4 rounded shadow-sm border mb-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">DATA INICIAL</label>
+                        <input type="date" class="form-control text-secondary" value="2026-09-05">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">DATA FINAL</label>
+                        <input type="date" class="form-control text-secondary" value="2026-09-05">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">USUÁRIO</label>
+                        <select class="form-select text-secondary">
+                            <option>Todos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">STATUS</label>
+                        <select class="form-select text-secondary">
+                            <option>Todos</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4 d-flex gap-2">
+                    <button class="btn text-white fw-semibold px-4" style="background-color: var(--ifpi-verde, #1b8c3e);">
+                        <i class="fas fa-search"></i> Pesquisar
+                    </button>
+                    <button class="btn btn-outline-secondary bg-white fw-semibold px-4">
+                        <i class="fas fa-eraser"></i> Limpar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card Interno: Tabela de Resultados -->
+            <div class="bg-white rounded shadow-sm border overflow-hidden">
+                <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h6 class="m-0 fw-bold d-flex align-items-center gap-2" style="color: var(--ifpi-verde-escuro, #146c2e);">
+                        <i class="fas fa-table"></i> Resultados
+                    </h6>
+                    <small class="text-muted fw-medium">10 registros encontrados</small>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom align-middle mb-0">
+                        <thead class="text-muted">
+                            <tr>
+                                <th class="py-3 px-4 border-bottom-2">ID</th>
+                                <th class="py-3 px-4 border-bottom-2">CHAVE</th>
+                                <th class="py-3 px-4 border-bottom-2">SETOR</th>
+                                <th class="py-3 px-4 border-bottom-2">USUÁRIO</th>
+                                <th class="py-3 px-4 border-bottom-2">MATRÍCULA</th>
+                                <th class="py-3 px-4 border-bottom-2">DATA/HORA</th>
+                                <th class="py-3 px-4 border-bottom-2">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody style="font-size: 13px;" class="text-secondary fw-medium">
+                            <tr>
+                                <td class="px-4">180</td>
+                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">05</td>
+                                <td class="px-4">Laboratório de Informática 03 - Bloco C</td>
+                                <td class="px-4 text-dark">Antonio José Alves de Sousa</td>
+                                <td class="px-4">2023112lcom0011</td>
+                                <td class="px-4">05/09/2026 17:33</td>
+                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">179</td>
+                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">01</td>
+                                <td class="px-4">Life - Bloco D</td>
+                                <td class="px-4 text-dark">Antonio José Alves de Sousa</td>
+                                <td class="px-4">2023112lcom0011</td>
+                                <td class="px-4">05/09/2026 17:32</td>
+                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">178</td>
+                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">07</td>
+                                <td class="px-4">Auditório - Bloco D</td>
+                                <td class="px-4 text-dark">Jefferson de Sousa Silva</td>
+                                <td class="px-4">1579379</td>
+                                <td class="px-4">05/09/2026 16:18</td>
+                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">177</td>
+                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">06</td>
+                                <td class="px-4">Biblioteca - Bloco C</td>
+                                <td class="px-4 text-dark">Jefferson de Sousa Silva</td>
+                                <td class="px-4">1579379</td>
+                                <td class="px-4">05/09/2026 16:16</td>
+                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">176</td>
+                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">02</td>
+                                <td class="px-4">Maker - Bloco D</td>
+                                <td class="px-4 text-dark">Esdras Sousa e Silva</td>
+                                <td class="px-4">2023112lcom0022</td>
+                                <td class="px-4">05/09/2026 15:45</td>
+                                <td class="px-4"><span class="status-badge status-devolvido">DEVOLVIDO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">175</td>
+                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">04</td>
+                                <td class="px-4">Laboratório de Informática 02 - Bloco A</td>
+                                <td class="px-4 text-dark">Jefferson de Sousa Silva</td>
+                                <td class="px-4">1579379</td>
+                                <td class="px-4">05/09/2026 16:16</td>
+                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">174</td>
+                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">03</td>
+                                <td class="px-4">Laboratório Informática 01 - Bloco A</td>
+                                <td class="px-4 text-dark">Jefferson de Sousa Silva</td>
+                                <td class="px-4">1579379</td>
+                                <td class="px-4">05/09/2026 16:16</td>
+                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">173</td>
+                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">02</td>
+                                <td class="px-4">Maker - Bloco D</td>
+                                <td class="px-4 text-dark">Jefferson de Sousa Silva</td>
+                                <td class="px-4">1579379</td>
+                                <td class="px-4">05/09/2026 16:16</td>
+                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">172</td>
+                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">01</td>
+                                <td class="px-4">Life - Bloco D</td>
+                                <td class="px-4 text-dark">Esdras Sousa e Silva</td>
+                                <td class="px-4">2023112lcom0022</td>
+                                <td class="px-4">05/09/2026 14:30</td>
+                                <td class="px-4"><span class="status-badge status-repassado">REPASSADO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4">171</td>
+                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">03</td>
+                                <td class="px-4">Laboratório Informática 01 - Bloco A</td>
+                                <td class="px-4 text-dark">Antonio José Alves de Sousa</td>
+                                <td class="px-4">2023112lcom0011</td>
+                                <td class="px-4">05/09/2026 14:15</td>
+                                <td class="px-4"><span class="status-badge status-devolvido">DEVOLVIDO</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Rodapé da Tabela: Exportação -->
+                <div class="p-3 d-flex justify-content-between align-items-center border-top flex-wrap gap-3">
+                    <div class="text-muted" style="font-size: 13px;">
+                        <i class="fas fa-info-circle"></i> Exporte os resultados para análise externa
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-sm btn-success fw-semibold"><i class="fas fa-file-excel"></i> Excel</button>
+                        <button class="btn btn-sm btn-primary fw-semibold"><i class="fas fa-file-csv"></i> CSV</button>
+                        <button class="btn btn-sm btn-danger fw-semibold"><i class="fas fa-file-pdf"></i> PDF</button>
+                        <button class="btn btn-sm btn-secondary fw-semibold"><i class="fas fa-print"></i> Imprimir</button>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-5 mb-4">
+
+            <!-- Botão Voltar (Padronizado com sua tela de Histórico) -->
+            <div class="row g-2 justify-content-md-start">
+                <div class="col-6 col-md-auto">
+                    <a href="{% url 'operacao_rapida' %}" class="btn btn-secondary shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1 px-md-5">
+                        <i class="fas fa-chevron-left me-1 me-md-2"></i> Voltar
+                    </a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- Scripts Opcionais: Se precisar alimentar filtros via JS, inclua como no histórico -->
+<!-- <script src="{% static 'consulta/consulta.js' %}"></script> -->
+{% endblock conteudo %}

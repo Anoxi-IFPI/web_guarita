@@ -556,3 +556,12 @@ def painel_historico(request):
     }
     
     return render(request, 'home/historico/historico.html', context)
+
+
+# ==========================================
+# VIEWS PARA CONSULTA DE EMPRESTIMOS POR DATA E EXPORTAÇÃO PARA CSV
+# ==========================================
+
+def relatorio_emprestimos_data(request):
+    # O caminho aponta para a pasta consulta e o arquivo consulta.html que você tem
+    return render(request, 'home/relatorio/relatorio.html')

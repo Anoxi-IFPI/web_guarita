@@ -38,8 +38,9 @@ urlpatterns = [
     path('emprestimos/devolver/', views.devolver_emprestimo, name='devolver_emprestimo'),
     # path('emprestimos/repassar/<int:id>/', views.repassar_emprestimo, name='repassar_emprestimo'),
     
-    
-    
     #ROTA DE HITÓRICO
     path('historico/', views.painel_historico, name='painel_historico'),
+    
+    #ROTAS DE RELATÓRIOS
+    path('relatorios/emprestimos/data/', views.relatorio_emprestimos_data, name='relatorio_emprestimos_data'),
 ]
