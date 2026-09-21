@@ -7,12 +7,12 @@ const alertaContainer = document.getElementById('alerta_container');
 // Função para mostrar o aviso verde ou vermelho na tela
 function mostrarAlerta(mensagem, tipo) {
     alertaContainer.innerHTML = `
-        <div class="alert alert-${tipo} alert-dismissible fade show fs-5 shadow-sm" role="alert" style="position: relative; padding: 15px 15px 45px 15px; text-align: left !important;">
+        <div class="alert alert-${tipo} alert-dismissible fade show fs-5 shadow-sm" role="alert" style="position: relative; padding: 15px 15px 45px 15px;">
             <div class="d-flex align-items-start">
                 <!-- Ícone alinhado no topo -->
                 <i class="fas ${tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} fs-3 me-3 flex-shrink-0" style="margin-top: 3px;"></i>
                 
-                <!-- Texto estritamente justificado à esquerda -->
+                <!-- Texto alinhado à esquerda de forma natural (sem os buracos do justificado) -->
                 <div class="flex-grow-1 text-start" style="line-height: 1.4;">
                     <strong>${mensagem}</strong>
                 </div>
