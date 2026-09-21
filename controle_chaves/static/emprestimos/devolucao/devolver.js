@@ -7,14 +7,19 @@ const alertaContainer = document.getElementById('alerta_container');
 // Função para mostrar o aviso verde ou vermelho na tela
 function mostrarAlerta(mensagem, tipo) {
     alertaContainer.innerHTML = `
-        <div class="alert alert-${tipo} alert-dismissible fade show fs-5 shadow-sm text-start" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas ${tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} fs-3 me-3 flex-shrink-0"></i>
-                <div class="flex-grow-1" style="text-align: left; line-height: 1.4;">
+        <div class="alert alert-${tipo} alert-dismissible fade show fs-5 shadow-sm" role="alert" style="position: relative; padding: 15px 15px 45px 15px; text-align: left !important;">
+            <div class="d-flex align-items-start">
+                <!-- Ícone alinhado no topo -->
+                <i class="fas ${tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} fs-3 me-3 flex-shrink-0" style="margin-top: 3px;"></i>
+                
+                <!-- Texto estritamente justificado à esquerda -->
+                <div class="flex-grow-1 text-start" style="line-height: 1.4;">
                     <strong>${mensagem}</strong>
                 </div>
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            
+            <!-- Botão X movido para o canto inferior direito -->
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="position: absolute; top: auto; bottom: 10px; right: 10px; padding: 0.5rem;"></button>
         </div>
     `;
     
@@ -53,7 +58,6 @@ function buscarChave(codigo) {
 
         // 3. Adiciona a chave na lista SEM O ID, e configurado para descer no mobile
         let li = document.createElement('li');
-        // classes d-flex, flex-wrap e gap-2 garantem o comportamento de descer se não couber
         li.className = 'list-group-item d-flex flex-wrap justify-content-between align-items-center fs-5 py-3 mb-2 shadow-sm border-success bg-light gap-2';
         li.innerHTML = `
             <div class="d-flex align-items-center flex-grow-1" style="min-width: 60%;">
