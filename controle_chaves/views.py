@@ -13,6 +13,8 @@ import barcode
 from barcode.writer import ImageWriter
 from django.shortcuts import render
 from django.db.models import Q
+from datetime import datetime
+
 
 
 
@@ -563,5 +565,80 @@ def painel_historico(request):
 # ==========================================
 
 def relatorio_emprestimos_data(request):
-    # O caminho aponta para a pasta consulta e o arquivo consulta.html que você tem
-    return render(request, 'home/relatorio/relatorio.html')
+    emprestimos_lista = []
+    
+    data_inicial = request.GET.get('data_inicial')
+    data_final = request.GET.get('data_final')
+    usuario_id = request.GET.get('usuario')
+    status_filtro = request.GET.get('status')
+
+    pesquisa_realizada = bool(request.GET)
+
+    if pesquisa_realizada:
+        # OTIMIZAÇÃO EXTREMA: select_related puxa as Chaves e Usuários em 1 única consulta, zerando o lag.
+        qs = Emprestimo.objects.exclude(status='SOLICITADO').select_related('chave', 'usuario')
+        
+        # Filtro de usuário direto no banco
+        if usuario_id and usuario_id != 'Todos':
+            qs = qs.filter(usuario_id=usuario_id)
+            
+        d_inicial = datetime.strptime(data_inicial, '%Y-%m-%d').date() if data_inicial else None
+        d_final = datetime.strptime(data_final, '%Y-%m-%d').date() if data_final else None
+
+        # Desmembra os eventos usando o Python (muito mais rápido para separar saídas e entradas)
+        for emp in qs:
+            chave_nome = emp.chave.nome if emp.chave else '-'
+            setor_nome = emp.chave.setor if emp.chave else '-'
+            usr_nome = emp.usuario.nome if emp.usuario else '-'
+            usr_mat = emp.usuario.matricula if emp.usuario else '-'
+
+            # EVENTO 1: SAÍDA (O empréstimo)
+            if emp.data:
+                data_valida = True
+                if d_inicial and emp.data.date() < d_inicial: data_valida = False
+                if d_final and emp.data.date() > d_final: data_valida = False
+                
+                # Se o usuário não filtrou por status, ou se filtrou especificamente por 'NOVO'
+                if data_valida and (status_filtro in ['Todos', 'NOVO', None]):
+                    emprestimos_lista.append({
+                        'id': emp.id,
+                        'chave_nome': chave_nome,
+                        'setor': setor_nome,
+                        'usuario_nome': usr_nome,
+                        'matricula': usr_mat,
+                        'data_hora': emp.data,
+                        'status': 'NOVO' 
+                    })
+
+            # EVENTO 2: ENTRADA (A devolução ou repasse)
+            if emp.data_devolucao:
+                data_valida = True
+                if d_inicial and emp.data_devolucao.date() < d_inicial: data_valida = False
+                if d_final and emp.data_devolucao.date() > d_final: data_valida = False
+                
+                if data_valida:
+                    evento_status = emp.status if emp.status in ['DEVOLVIDO', 'REPASSADO'] else 'DEVOLVIDO'
+                    if (status_filtro in ['Todos', evento_status, None]):
+                        emprestimos_lista.append({
+                            'id': emp.id,
+                            'chave_nome': chave_nome,
+                            'setor': setor_nome,
+                            'usuario_nome': usr_nome,
+                            'matricula': usr_mat,
+                            'data_hora': emp.data_devolucao,
+                            'status': evento_status
+                        })
+
+        # Ordena a lista unificada pela data e hora (do evento mais recente para o mais antigo)
+        emprestimos_lista.sort(key=lambda x: x['data_hora'], reverse=True)
+
+    usuarios_lista = Usuario.objects.all()
+
+    context = {
+        'emprestimos': emprestimos_lista,
+        'usuarios_lista': usuarios_lista,
+        'pesquisa_realizada': pesquisa_realizada 
+    }
+    
+    return render(request, 'home/relatorio/relatorio.html', context)
+

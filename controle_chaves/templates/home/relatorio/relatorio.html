@@ -5,28 +5,30 @@
 
 {% block conteudo %}
 <style>
-    /* Estilos específicos para os badges de status para ficarem idênticos ao design original */
+    /* Estilos específicos para os badges de status - Cores Fortes */
     .status-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
+        padding: 5px 15px;
+        border-radius: 6px;
+        font-size: 12px;
         font-weight: 700;
         display: inline-block;
+        color: white; /* Texto sempre branco para contraste */
     }
+    /* Baseado na image_202c41.png - Azul vibrante */
     .status-ativo {
-        background-color: #e7f0ff;
-        color: #0d6efd;
-        border: 1px solid #b6d4fe;
+        background-color: #0d6efd; 
     }
+    /* Verde forte para devoluções */
     .status-devolvido {
-        background-color: #e8f5e9;
-        color: #198754;
-        border: 1px solid #a3cfbb;
+        background-color: #198754; 
     }
+    /* Laranja escuro para repasses */
     .status-repassado {
-        background-color: #fff3cd;
-        color: #fd7e14;
-        border: 1px solid #ffda6a;
+        background-color: #fd7e14; 
+    }
+    /* Cinza escuro para NOVO / Genérico (como na image_208257.png) */
+    .status-novo {
+        background-color: #6c757d; 
     }
     
     .table-custom th {
@@ -50,47 +52,59 @@
 
         <div class="card-body p-4 bg-light">
             
-            <!-- Card Interno: Filtros de Pesquisa -->
-            <div class="bg-white p-4 rounded shadow-sm border mb-4">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">DATA INICIAL</label>
-                        <input type="date" class="form-control text-secondary" value="2026-09-05">
+            <!-- FORMULÁRIO DE FILTROS -->
+            <form method="GET" action="{% url 'relatorio_emprestimos_data' %}">                   
+                <div class="bg-white p-4 rounded shadow-sm border mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">DATA INICIAL</label>
+                            <input type="date" name="data_inicial" class="form-control text-secondary" value="{{ request.GET.data_inicial }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">DATA FINAL</label>
+                            <input type="date" name="data_final" class="form-control text-secondary" value="{{ request.GET.data_final }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">USUÁRIO</label>
+                            <select name="usuario" class="form-select text-secondary">
+                                <option value="Todos">Todos</option>
+                                {% for u in usuarios_lista %}
+                                    <option value="{{ u.id }}" {% if request.GET.usuario == u.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ u.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">STATUS</label>
+                            <select name="status" class="form-select text-secondary">
+                                <option value="Todos">Todos</option>
+                                <!-- Ajustado os values conforme seu banco de dados -->
+                                <option value="NOVO" {% if request.GET.status == 'NOVO' %}selected{% endif %}>Novo (Ativo)</option>
+                                <option value="DEVOLVIDO" {% if request.GET.status == 'DEVOLVIDO' %}selected{% endif %}>Devolvido</option>
+                                <option value="REPASSADO" {% if request.GET.status == 'REPASSADO' %}selected{% endif %}>Repassado</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">DATA FINAL</label>
-                        <input type="date" class="form-control text-secondary" value="2026-09-05">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">USUÁRIO</label>
-                        <select class="form-select text-secondary">
-                            <option>Todos</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">STATUS</label>
-                        <select class="form-select text-secondary">
-                            <option>Todos</option>
-                        </select>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn text-white fw-semibold px-4" style="background-color: var(--ifpi-verde, #1b8c3e);">
+                            <i class="fas fa-search"></i> Pesquisar
+                        </button>
+                        <a href="{% url 'relatorio_emprestimos_data' %}" class="btn btn-outline-secondary bg-white fw-semibold px-4">                            
+                            <i class="fas fa-eraser"></i> Limpar
+                        </a>
                     </div>
                 </div>
-                <div class="mt-4 d-flex gap-2">
-                    <button class="btn text-white fw-semibold px-4" style="background-color: var(--ifpi-verde, #1b8c3e);">
-                        <i class="fas fa-search"></i> Pesquisar
-                    </button>
-                    <button class="btn btn-outline-secondary bg-white fw-semibold px-4">
-                        <i class="fas fa-eraser"></i> Limpar
-                    </button>
-                </div>
-            </div>
+            </form>
 
-            <!-- Card Interno: Tabela de Resultados -->
+            <!-- Card Interno: Tabela de Resultados (SÓ MOSTRA SE HOUVE PESQUISA) -->
+            {% if pesquisa_realizada %}
             <div class="bg-white rounded shadow-sm border overflow-hidden">
                 <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h6 class="m-0 fw-bold d-flex align-items-center gap-2" style="color: var(--ifpi-verde-escuro, #146c2e);">
                         <i class="fas fa-table"></i> Resultados
                     </h6>
-                    <small class="text-muted fw-medium">10 registros encontrados</small>
+                    <small class="text-muted fw-medium">{{ emprestimos|length }} registros encontrados</small>
                 </div>
                 
                 <div class="table-responsive">
@@ -107,96 +121,32 @@
                             </tr>
                         </thead>
                         <tbody style="font-size: 13px;" class="text-secondary fw-medium">
+                            {% for emp in emprestimos %}
                             <tr>
-                                <td class="px-4">180</td>
-                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">05</td>
-                                <td class="px-4">Laboratório de Informática 03 - Bloco C</td>
-                                <td class="px-4 text-dark">Antonio José Alves de Sousa</td>
-                                <td class="px-4">2023112lcom0011</td>
-                                <td class="px-4">05/09/2026 17:33</td>
-                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
+                                <td class="px-4">{{ emp.id }}</td>
+                                <!-- Agora usamos os nomes diretos das chaves do dicionário gerado no Python -->
+                                <td class="px-4 fw-bold text-dark">{{ emp.chave_nome }}</td>
+                                <td class="px-4 text-dark">{{ emp.setor }}</td>
+                                <td class="px-4 text-dark">{{ emp.usuario_nome }}</td>
+                                <td class="px-4">{{ emp.matricula }}</td>
+                                <td class="px-4">{{ emp.data_hora|date:"d/m/Y H:i" }}</td>
+                                <td class="px-4">
+                                    {% if emp.status == 'NOVO' %}
+                                        <span class="status-badge status-ativo">ATIVO</span>
+                                    {% elif emp.status == 'DEVOLVIDO' %}
+                                        <span class="status-badge status-devolvido">DEVOLVIDO</span>
+                                    {% elif emp.status == 'REPASSADO' %}
+                                        <span class="status-badge status-repassado">REPASSADO</span>
+                                    {% endif %}
+                                </td>
                             </tr>
+                            {% empty %}
                             <tr>
-                                <td class="px-4">179</td>
-                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">01</td>
-                                <td class="px-4">Life - Bloco D</td>
-                                <td class="px-4 text-dark">Antonio José Alves de Sousa</td>
-                                <td class="px-4">2023112lcom0011</td>
-                                <td class="px-4">05/09/2026 17:32</td>
-                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    Nenhum empréstimo encontrado com os filtros informados.
+                                </td>
                             </tr>
-                            <tr>
-                                <td class="px-4">178</td>
-                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">07</td>
-                                <td class="px-4">Auditório - Bloco D</td>
-                                <td class="px-4 text-dark">Jefferson de Sousa Silva</td>
-                                <td class="px-4">1579379</td>
-                                <td class="px-4">05/09/2026 16:18</td>
-                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4">177</td>
-                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">06</td>
-                                <td class="px-4">Biblioteca - Bloco C</td>
-                                <td class="px-4 text-dark">Jefferson de Sousa Silva</td>
-                                <td class="px-4">1579379</td>
-                                <td class="px-4">05/09/2026 16:16</td>
-                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4">176</td>
-                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">02</td>
-                                <td class="px-4">Maker - Bloco D</td>
-                                <td class="px-4 text-dark">Esdras Sousa e Silva</td>
-                                <td class="px-4">2023112lcom0022</td>
-                                <td class="px-4">05/09/2026 15:45</td>
-                                <td class="px-4"><span class="status-badge status-devolvido">DEVOLVIDO</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4">175</td>
-                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">04</td>
-                                <td class="px-4">Laboratório de Informática 02 - Bloco A</td>
-                                <td class="px-4 text-dark">Jefferson de Sousa Silva</td>
-                                <td class="px-4">1579379</td>
-                                <td class="px-4">05/09/2026 16:16</td>
-                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4">174</td>
-                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">03</td>
-                                <td class="px-4">Laboratório Informática 01 - Bloco A</td>
-                                <td class="px-4 text-dark">Jefferson de Sousa Silva</td>
-                                <td class="px-4">1579379</td>
-                                <td class="px-4">05/09/2026 16:16</td>
-                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4">173</td>
-                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">02</td>
-                                <td class="px-4">Maker - Bloco D</td>
-                                <td class="px-4 text-dark">Jefferson de Sousa Silva</td>
-                                <td class="px-4">1579379</td>
-                                <td class="px-4">05/09/2026 16:16</td>
-                                <td class="px-4"><span class="status-badge status-ativo">ATIVO</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4">172</td>
-                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">01</td>
-                                <td class="px-4">Life - Bloco D</td>
-                                <td class="px-4 text-dark">Esdras Sousa e Silva</td>
-                                <td class="px-4">2023112lcom0022</td>
-                                <td class="px-4">05/09/2026 14:30</td>
-                                <td class="px-4"><span class="status-badge status-repassado">REPASSADO</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4">171</td>
-                                <td class="px-4 fw-bold" style="color: var(--ifpi-verde, #1b8c3e);">03</td>
-                                <td class="px-4">Laboratório Informática 01 - Bloco A</td>
-                                <td class="px-4 text-dark">Antonio José Alves de Sousa</td>
-                                <td class="px-4">2023112lcom0011</td>
-                                <td class="px-4">05/09/2026 14:15</td>
-                                <td class="px-4"><span class="status-badge status-devolvido">DEVOLVIDO</span></td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -214,10 +164,18 @@
                     </div>
                 </div>
             </div>
+            {% else %}
+            <!-- MENSAGEM QUANDO NÃO HÁ PESQUISA -->
+            <div class="bg-white rounded shadow-sm border p-5 text-center">
+                <i class="fas fa-search fa-3x text-muted mb-3" style="opacity: 0.3;"></i>
+                <h6 class="text-muted fw-bold">Nenhuma consulta realizada</h6>
+                <p class="text-muted small mb-0">Utilize os filtros acima e clique em "Pesquisar" para visualizar os dados.</p>
+            </div>
+            {% endif %}
 
             <hr class="mt-5 mb-4">
 
-            <!-- Botão Voltar (Padronizado com sua tela de Histórico) -->
+            <!-- Botão Voltar -->
             <div class="row g-2 justify-content-md-start">
                 <div class="col-6 col-md-auto">
                     <a href="{% url 'operacao_rapida' %}" class="btn btn-secondary shadow-sm w-100 btn-lg d-flex justify-content-center align-items-center text-nowrap px-1 px-md-5">
@@ -229,7 +187,4 @@
         </div>
     </div>
 </div>
-
-<!-- Scripts Opcionais: Se precisar alimentar filtros via JS, inclua como no histórico -->
-<!-- <script src="{% static 'consulta/consulta.js' %}"></script> -->
 {% endblock conteudo %}
