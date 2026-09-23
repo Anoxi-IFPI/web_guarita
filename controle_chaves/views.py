@@ -16,10 +16,6 @@ from django.db.models import Q
 from datetime import datetime
 
 
-
-
-# Create your views here.
-
 # ==========================================
 # VIEWS PARA PAGINA INICIAL
 # ========================================== 
@@ -400,7 +396,7 @@ def finalizar_emprestimo(request, id):
             
         return render(request, 'home/emprestimos/resumo_sucesso.html', contexto)
     else:
-        messages.error(request, 'Nenhuma chave encontrada para finalizar.')
+        # messages.error(request, 'Nenhuma chave encontrada para finalizar.')
         return redirect('listar_emprestimos')
 
 def remover_emprestimo(request, id):
@@ -508,6 +504,58 @@ def devolver_emprestimo(request):
 # VIEWS PARA ACOMPANHAMENTO E HITÓRICO DE EMPRESTIMOS
 # ==========================================
 
+# def painel_historico(request):
+#     hoje = timezone.now().date()
+    
+#     # Busca registros que foram CRIADOS hoje OU DEVOLVIDOS hoje
+#     movimentacoes_do_dia = Emprestimo.objects.filter(
+#         Q(data__date=hoje) | Q(data_devolucao__date=hoje)
+#     ).exclude(status='SOLICITADO')
+
+#     movimentos_list = []
+    
+#     for mov in movimentacoes_do_dia:
+        
+#         # 1. EVENTO DE SAÍDA DA CHAVE (Empréstimo ou Repasse recebido)
+#         if mov.data and mov.data.date() == hoje:
+#             movimentos_list.append({
+#                 'id': str(mov.id), 
+#                 'cod': mov.chave.nome if mov.chave else 'S/N', # CORRIGIDO AQUI PARA .nome
+#                 'setor': getattr(mov.chave, 'setor', 'Setor não informado'),
+#                 'usuario': str(mov.usuario), 
+#                 'matricula': getattr(mov.usuario, 'matricula', 'S/N'),
+#                 'tipo': 'emprestimo',
+#                 'hora': mov.data.strftime('%H:%M'),
+#                 'datetime_obj': mov.data 
+#             })
+
+#         # 2. EVENTO DE ENTRADA DA CHAVE (Devolução para guarita ou Repasse para outro)
+#         if mov.data_devolucao and mov.data_devolucao.date() == hoje:
+#             tipo_evento = 'repassado' if mov.status == 'REPASSADO' else 'devolvido'
+            
+#             movimentos_list.append({
+#                 'id': str(mov.id),
+#                 'cod': mov.chave.nome if mov.chave else 'S/N', # JÁ ESTAVA CORRETO AQUI
+#                 'setor': getattr(mov.chave, 'setor', 'Setor não informado'),
+#                 'usuario': str(mov.usuario), 
+#                 'matricula': getattr(mov.usuario, 'matricula', 'S/N'),
+#                 'tipo': tipo_evento,
+#                 'hora': mov.data_devolucao.strftime('%H:%M'),
+#                 'datetime_obj': mov.data_devolucao
+#             })
+
+#     movimentos_list.sort(key=lambda x: x['datetime_obj'], reverse=True)
+
+#     for m in movimentos_list:
+#         del m['datetime_obj']
+
+#     context = {
+#         'movimentos_json': movimentos_list
+#     }
+    
+#     return render(request, 'home/historico/historico.html', context)
+
+
 def painel_historico(request):
     hoje = timezone.now().date()
     
@@ -522,14 +570,18 @@ def painel_historico(request):
         
         # 1. EVENTO DE SAÍDA DA CHAVE (Empréstimo ou Repasse recebido)
         if mov.data and mov.data.date() == hoje:
+            
+            # CONVERSÃO AQUI: timezone.localtime() converte o UTC para o horário local
+            hora_local = timezone.localtime(mov.data).strftime('%H:%M')
+            
             movimentos_list.append({
                 'id': str(mov.id), 
-                'cod': mov.chave.nome if mov.chave else 'S/N', # CORRIGIDO AQUI PARA .nome
+                'cod': mov.chave.nome if mov.chave else 'S/N', 
                 'setor': getattr(mov.chave, 'setor', 'Setor não informado'),
                 'usuario': str(mov.usuario), 
                 'matricula': getattr(mov.usuario, 'matricula', 'S/N'),
                 'tipo': 'emprestimo',
-                'hora': mov.data.strftime('%H:%M'),
+                'hora': hora_local, # Variável convertida inserida aqui
                 'datetime_obj': mov.data 
             })
 
@@ -537,14 +589,17 @@ def painel_historico(request):
         if mov.data_devolucao and mov.data_devolucao.date() == hoje:
             tipo_evento = 'repassado' if mov.status == 'REPASSADO' else 'devolvido'
             
+            # CONVERSÃO AQUI TAMBÉM
+            hora_devolucao_local = timezone.localtime(mov.data_devolucao).strftime('%H:%M')
+            
             movimentos_list.append({
                 'id': str(mov.id),
-                'cod': mov.chave.nome if mov.chave else 'S/N', # JÁ ESTAVA CORRETO AQUI
+                'cod': mov.chave.nome if mov.chave else 'S/N', 
                 'setor': getattr(mov.chave, 'setor', 'Setor não informado'),
                 'usuario': str(mov.usuario), 
                 'matricula': getattr(mov.usuario, 'matricula', 'S/N'),
                 'tipo': tipo_evento,
-                'hora': mov.data_devolucao.strftime('%H:%M'),
+                'hora': hora_devolucao_local, # Variável convertida inserida aqui
                 'datetime_obj': mov.data_devolucao
             })
 
@@ -558,7 +613,6 @@ def painel_historico(request):
     }
     
     return render(request, 'home/historico/historico.html', context)
-
 
 # ==========================================
 # VIEWS PARA CONSULTA DE EMPRESTIMOS POR DATA E EXPORTAÇÃO PARA CSV

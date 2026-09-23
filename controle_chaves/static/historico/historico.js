@@ -1,17 +1,36 @@
 const movimentosData = JSON.parse(document.getElementById('movimentos-data').textContent);
 let filtroAtual = 'todos';
+let filtroTexto = ''; 
+
+document.getElementById('pesquisa-texto').addEventListener('input', function(e) {
+    filtroTexto = e.target.value.toLowerCase().trim();
+    renderizarHistorico(); 
+});
 
 function renderizarHistorico() {
     const feed = document.getElementById('historicoFeed');
     let dados = movimentosData;
 
-    if (filtroAtual !== 'todos') dados = dados.filter(m => m.tipo === filtroAtual);
+    // 1. Aplica o filtro dos botões
+    if (filtroAtual !== 'todos') {
+        dados = dados.filter(m => m.tipo === filtroAtual);
+    }
 
+    // 2. Aplica o filtro da barra de pesquisa de texto (APENAS CHAVE E SETOR)
+    if (filtroTexto !== '') {
+        dados = dados.filter(m => 
+            m.cod.toLowerCase().includes(filtroTexto) || 
+            m.setor.toLowerCase().includes(filtroTexto)
+        );
+    }
+
+    // Caso a busca não retorne nada
     if (dados.length === 0) {
         feed.innerHTML = `
             <div class="text-center p-5 bg-white rounded-3 border-0 shadow-sm text-muted">
-                <i class="fas fa-inbox mb-3 d-block text-light" style="font-size: 3rem;"></i>
+                <i class="fas fa-search mb-3 d-block text-light" style="font-size: 3rem;"></i>
                 <strong class="fs-5">Nenhum movimento encontrado</strong>
+                <p class="mt-2 mb-0 small text-muted">Tente buscar por outro termo ou remova os filtros.</p>
             </div>
         `;
         return;
@@ -22,7 +41,7 @@ function renderizarHistorico() {
     let html = `
         <div class="d-flex align-items-center gap-3 py-2 text-muted fw-semibold small">
             <span><i class="fas fa-calendar-day"></i> Hoje, ${hoje}</span>
-            <span class="badge bg-secondary rounded-pill">${dados.length} movimentos</span>
+            <span class="badge bg-secondary rounded-pill">${dados.length} resultados</span>
             <hr class="flex-grow-1 opacity-25 m-0">
         </div>
     `;
