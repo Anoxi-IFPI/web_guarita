@@ -26,6 +26,7 @@
             position: fixed;
             top: 0;
             left: 0;
+            margin-left: calc(-1 * var(--sidebar-width)); /* NOVO: Esconde o menu por padrão */
             transition: all 0.3s ease-in-out;
             z-index: 1000;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
@@ -81,7 +82,7 @@
 
         /* 3. Configuração do Conteúdo e Navbar */
         .content {
-            margin-left: var(--sidebar-width);
+            margin-left: 0; /* MODIFICADO: Tela cheia por padrão */
             transition: transform 0.3s ease-in-out, margin-left 0.3s ease-in-out; /* Suavidade ao abrir/fechar */
             min-height: 100vh;
             display: flex;
@@ -164,28 +165,25 @@
         /* --------------------------------------------------- */
         /* CORREÇÃO 2: COMPORTAMENTO DE ABRIR/FECHAR NO PC     */
         /* --------------------------------------------------- */
-        .sidebar.active { margin-left: calc(-1 * var(--sidebar-width)); }
-        .content.active { margin-left: 0; }
+        .sidebar.active { margin-left: 0; } /* MODIFICADO: Traz o menu de volta */
+        .content.active { margin-left: var(--sidebar-width); } /* MODIFICADO: Empurra o conteúdo para a direita */
 
         /* --------------------------------------------------- */
         /* CORREÇÃO 3: COMPORTAMENTO RESPONSIVO NO CELULAR     */
         /* --------------------------------------------------- */
         @media (max-width: 768px) {
-            .sidebar { margin-left: calc(-1 * var(--sidebar-width)); }
-            .sidebar.active { margin-left: 0; }
-            .content { margin-left: 0; width: 100%; }
+            .content { width: 100%; }
             
-            /* Usar 'transform' desliza a tela sem amassar a barra verde */
-            .content.active { transform: translateX(var(--sidebar-width)); }
+            /* Garante que no celular o conteúdo não seja esmagado, e sim deslizado */
+            .content.active { 
+                margin-left: 0; 
+                transform: translateX(var(--sidebar-width)); 
+            }
             
-            /* Ajustes para a barra superior caber certinho na tela pequena */
-            .navbar-ifpi h5 { display: none; } /* Esconde o título no celular para dar espaço */
+            /* Ajustes para a barra superior caber certinho na tela pequena (MANTIDO) */
+            .navbar-ifpi h5 { display: none; }
             .nav-icons a { margin-left: 10px; font-size: 1.1rem; }
-            
-            /* Esconde os textos dos botões, deixa apenas os ícones */
             .btn-voltar span, .btn-sair span { display: none; }
-            
-            /* Diminui margens e tamanhos dos botões no celular */
             .btn-voltar { margin-left: 10px; padding: 6px 10px; gap: 0; }
             .btn-sair { margin-left: 10px; padding: 6px 10px; gap: 0; }
         }
