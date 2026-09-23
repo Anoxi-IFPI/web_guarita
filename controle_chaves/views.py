@@ -14,6 +14,7 @@ from barcode.writer import ImageWriter
 from django.shortcuts import render
 from django.db.models import Q
 from datetime import datetime
+import csv
 
 
 # ==========================================
@@ -629,30 +630,26 @@ def relatorio_emprestimos_data(request):
     pesquisa_realizada = bool(request.GET)
 
     if pesquisa_realizada:
-        # OTIMIZAÇÃO EXTREMA: select_related puxa as Chaves e Usuários em 1 única consulta, zerando o lag.
         qs = Emprestimo.objects.exclude(status='SOLICITADO').select_related('chave', 'usuario')
         
-        # Filtro de usuário direto no banco
         if usuario_id and usuario_id != 'Todos':
             qs = qs.filter(usuario_id=usuario_id)
             
         d_inicial = datetime.strptime(data_inicial, '%Y-%m-%d').date() if data_inicial else None
         d_final = datetime.strptime(data_final, '%Y-%m-%d').date() if data_final else None
 
-        # Desmembra os eventos usando o Python (muito mais rápido para separar saídas e entradas)
         for emp in qs:
             chave_nome = emp.chave.nome if emp.chave else '-'
             setor_nome = emp.chave.setor if emp.chave else '-'
             usr_nome = emp.usuario.nome if emp.usuario else '-'
             usr_mat = emp.usuario.matricula if emp.usuario else '-'
 
-            # EVENTO 1: SAÍDA (O empréstimo)
+            # EVENTO 1: SAÍDA
             if emp.data:
                 data_valida = True
                 if d_inicial and emp.data.date() < d_inicial: data_valida = False
                 if d_final and emp.data.date() > d_final: data_valida = False
                 
-                # Se o usuário não filtrou por status, ou se filtrou especificamente por 'NOVO'
                 if data_valida and (status_filtro in ['Todos', 'NOVO', None]):
                     emprestimos_lista.append({
                         'id': emp.id,
@@ -664,7 +661,7 @@ def relatorio_emprestimos_data(request):
                         'status': 'NOVO' 
                     })
 
-            # EVENTO 2: ENTRADA (A devolução ou repasse)
+            # EVENTO 2: ENTRADA
             if emp.data_devolucao:
                 data_valida = True
                 if d_inicial and emp.data_devolucao.date() < d_inicial: data_valida = False
@@ -683,8 +680,42 @@ def relatorio_emprestimos_data(request):
                             'status': evento_status
                         })
 
-        # Ordena a lista unificada pela data e hora (do evento mais recente para o mais antigo)
+        # Ordena a lista
         emprestimos_lista.sort(key=lambda x: x['data_hora'], reverse=True)
+
+    # ==========================================
+    # LÓGICA DE EXPORTAÇÃO PARA EXCEL/CSV
+    # ==========================================
+    if request.GET.get('exportar') == 'csv':
+        # UTF-8 com assinatura (BOM) para o Excel reconhecer acentos
+        response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+        response['Content-Disposition'] = 'attachment; filename="relatorio_chaves.csv"'
+        
+        # Ponto e vírgula separa as colunas no Excel brasileiro
+        writer = csv.writer(response, delimiter=';')
+        
+        # Cabeçalho da Tabela
+        writer.writerow(['ID', 'CHAVE', 'SETOR', 'USUÁRIO', 'MATRÍCULA', 'DATA/HORA', 'STATUS'])
+        
+        # Linhas de Dados
+        for emp in emprestimos_lista:
+            data_formatada = emp['data_hora'].strftime('%d/%m/%Y %H:%M') if emp['data_hora'] else '-'
+            
+            # Ajuste amigável do status
+            status_texto = 'ATIVO' if emp['status'] == 'NOVO' else emp['status']
+            
+            writer.writerow([
+                emp['id'],
+                emp['chave_nome'],
+                emp['setor'],
+                emp['usuario_nome'],
+                emp['matricula'],
+                data_formatada,
+                status_texto
+            ])
+            
+        return response 
+    # ==========================================
 
     usuarios_lista = Usuario.objects.all()
 

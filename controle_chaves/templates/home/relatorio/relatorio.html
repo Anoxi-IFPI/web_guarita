@@ -53,8 +53,7 @@
         <div class="card-body p-4 bg-light">
             
             <!-- FORMULÁRIO DE FILTROS -->
-            <form method="GET" action="{% url 'relatorio_emprestimos_data' %}">                   
-                <div class="bg-white p-4 rounded shadow-sm border mb-4">
+            <form method="GET" action="{% url 'relatorio_emprestimos_data' %}" id="form-pesquisa">                <div class="bg-white p-4 rounded shadow-sm border mb-4">
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">DATA INICIAL</label>
@@ -157,10 +156,12 @@
                         <i class="fas fa-info-circle"></i> Exporte os resultados para análise externa
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
-                        <button class="btn btn-sm btn-success fw-semibold"><i class="fas fa-file-excel"></i> Excel</button>
-                        <button class="btn btn-sm btn-primary fw-semibold"><i class="fas fa-file-csv"></i> CSV</button>
+                        <button type="submit" name="exportar" value="csv" form="form-pesquisa" class="btn btn-sm btn-success fw-semibold">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>                        
+                        {% comment %} <button class="btn btn-sm btn-primary fw-semibold"><i class="fas fa-file-csv"></i> CSV</button>
                         <button class="btn btn-sm btn-danger fw-semibold"><i class="fas fa-file-pdf"></i> PDF</button>
-                        <button class="btn btn-sm btn-secondary fw-semibold"><i class="fas fa-print"></i> Imprimir</button>
+                        <button class="btn btn-sm btn-secondary fw-semibold"><i class="fas fa-print"></i> Imprimir</button> {% endcomment %}
                     </div>
                 </div>
             </div>
