@@ -22,8 +22,10 @@
         </div>
         <div class="header-actions">
             <span class="time" id="currentTime"></span>
-            <a href="{% url 'painel_admin' %}" class="btn-sair"><i class="fas fa-sign-out-alt"></i> Sair</a>
-        </div>
+        <a href="{% url 'logout_usuario' %}" class="btn text-white fw-semibold" style="background-color: #dc3545;">
+            <i class="fas fa-sign-out-alt"></i> Sair
+        </a>       
+ </div>
     </header>
 
     <!-- ÁREA DE MENSAGENS FLUTUANTES -->
@@ -40,19 +42,17 @@
 
     <div class="main-container container-fluid">
         
+        {% if eh_admin %}
         <div class="cards-grid">
-            
             <!-- 1. FORMULÁRIO DE EMPRÉSTIMO -->
             <div class="card-operacao card-emprestimo">
                 <div class="card-header-title">
                     <i class="fas fa-upload"></i> Empréstimo
                 </div>
-                
                 <div class="form-wrapper">
                     <form method="POST" action="{% url 'cadastrar_emprestimo' %}">
                         {% csrf_token %}
                         <input type="hidden" name="origem" value="rapida">
-                        
                         <div class="form-group">
                             <label><i class="fas fa-id-card"></i> Matrícula (SUAP)</label>
                             <div class="input-group-custom">
@@ -67,71 +67,95 @@
             </div>
 
             <!-- 2. FORMULÁRIO DE DEVOLUÇÃO -->
-        <div class="card-operacao card-devolver">
-            <div class="card-header-title">
-                <i class="fas fa-download"></i> Devolver
-            </div>
-            
-            <div class="form-wrapper">
-                <!-- IDs adicionados para o JS interceptar e action removida -->
-                <form id="form-devolucao-rapida">
-                    <div class="form-group">
-                        <label><i class="fas fa-barcode"></i> Leia ou digite o código</label>
-                        <!-- ID input-codigo-devolucao adicionado -->
-                        <input type="text" id="input-codigo-devolucao" name="codigo" class="input-simple" placeholder="Código da chave para devolver" required autocomplete="off">
-                    </div>
-                    
-                    <button type="submit" class="btn-confirmar-verde">
-                        <i class="fas fa-check"></i> Confirmar Devolução
-                    </button>
-                </form>
-
-                <!-- Box "Chaves devolvidas" logo abaixo -->
-                <div class="box-chaves-emprestadas">
-                    <label style="font-size:13px; font-weight:600; color:#64748b; display:block; margin-bottom: 6px;">
-                        <i class="fas fa-list"></i> Devoluções
-                    </label>
-                    <!-- ID lista-chaves-devolvidas adicionado para o JS injetar o card -->
-                    <div id="lista-chaves-devolvidas">
-                        <!-- ID msg-lista-vazia adicionado para o JS apagar o texto -->
-                        <div class="lista-vazia" id="msg-lista-vazia">Nenhuma chave devolvida ainda</div>
+            <div class="card-operacao card-devolver">
+                <div class="card-header-title">
+                    <i class="fas fa-download"></i> Devolver
+                </div>
+                <div class="form-wrapper">
+                    <form id="form-devolucao-rapida">
+                        <div class="form-group">
+                            <label><i class="fas fa-barcode"></i> Leia ou digite o código</label>
+                            <input type="text" id="input-codigo-devolucao" name="codigo" class="input-simple" placeholder="Código da chave para devolver" required autocomplete="off">
+                        </div>
+                        <button type="submit" class="btn-confirmar-verde">
+                            <i class="fas fa-check"></i> Confirmar Devolução
+                        </button>
+                    </form>
+                    <div class="box-chaves-emprestadas">
+                        <label style="font-size:13px; font-weight:600; color:#64748b; display:block; margin-bottom: 6px;">
+                            <i class="fas fa-list"></i> Devoluções
+                        </label>
+                        <div id="lista-chaves-devolvidas">
+                            <div class="lista-vazia" id="msg-lista-vazia">Nenhuma chave devolvida ainda</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        {% else %}
+        <!-- MENSAGEM AMIGÁVEL PARA O USUÁRIO COMUM -->
+        <div class="text-center mt-5">
+            <i class="fas fa-user-shield text-success mb-3" style="font-size: 4rem;"></i>
+            <h2 class="text-secondary fw-bold">Bem-vindo(a), {{ request.user.first_name|default:"Usuário" }}!</h2>
+            <p class="text-muted fs-5 mt-2">Utilize os botões abaixo para gerenciar os repasses de suas chaves e visualizar e consultar o histórico diário emprestimos, devoluções e repasses.</p>
+        </div>
+        {% endif %}
 
     </div>
-        <!-- TASKBAR INFERIOR -->
-        <div class="taskbar mt-3">
-            <button class="btn-taskbar btn-repassar">
-                <i class="fas fa-exchange-alt"></i> Repassar
-            </button>
-            <a href="{% url 'painel_historico' %}" class="btn-taskbar btn-historico" style="text-decoration: none;">
-                <i class="fas fa-history"></i> Histórico
-            </a>
 
-            <a href="{% url 'listar_emprestimos' %}" class="btn-taskbar" style="background-color: var(--ifpi-verde); margin-left: 8px;">
-                <i class="fas fa-list-ul"></i> Empréstimos Ativos
-            </a>
+    <!-- TASKBAR INFERIOR AJUSTADA PARA MOBILE E WEB -->
+    <!-- TASKBAR INFERIOR COMPACTA E ORGANIZADA (GRID BOOTSTRAP) -->
+    <div class="taskbar mt-3 p-3 bg-light rounded shadow-sm border">
+        <div class="row g-2 justify-content-center">
+            
+            <!-- VISÍVEL PARA TODOS -->
+            <!-- col-6 faz ocupar 50% no celular, col-md-auto ajusta o tamanho no PC -->
+            <div class="col-6 col-md-auto">
+                <a href="{% url 'tela_repasse' %}" class="btn text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: #f58623; border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;">
+                    <i class="fas fa-exchange-alt"></i> Repassar
+                </a>
+            </div>
+            
+            <div class="col-6 col-md-auto">
+                <a href="{% url 'painel_historico' %}" class="btn text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: #0d47a1; border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;">
+                    <i class="fas fa-history"></i> Histórico
+                </a>
+            </div>
 
-            <a href="{% url 'relatorio_emprestimos_data' %}" class="btn-taskbar" style="background-color: #7b1fa2; color: white; margin-left: 8px; text-decoration: none;">
-                <i class="fas fa-file-alt"></i> Relatórios
-            </a>
-
-            <div class="admin-wrapper">
-                <div class="separator" style="margin-right: 16px;"></div>
-                <a href="{% url 'painel_admin' %}" class="btn-taskbar btn-admin">
+            <!-- VISÍVEL APENAS PARA ADMIN -->
+            {% if eh_admin %}
+            <div class="col-6 col-md-auto">
+                <a href="{% url 'listar_emprestimos' %}" class="btn text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: var(--ifpi-verde, #1b8c3e); border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;">
+                    <i class="fas fa-list-ul"></i> Empréstimos
+                </a>
+            </div>
+            
+            <div class="col-6 col-md-auto">
+                <a href="{% url 'relatorio_emprestimos_data' %}" class="btn text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: #7b1fa2; border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;">
+                    <i class="fas fa-file-alt"></i> Relatórios
+                </a>
+            </div>
+            
+            <!-- col-12 faz o Admin ocupar a linha toda no celular, como botão principal -->
+            <div class="col-12 col-md-auto mt-2 mt-md-0">
+                <a href="{% url 'painel_admin' %}" class="btn btn-danger fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;">
                     <i class="fas fa-cog"></i> Admin
                 </a>
             </div>
+            {% endif %}
+            
         </div>
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-<script src="{% static 'operacao_rapida/devolucao/devolucao.js' %}?v=3"></script>
-<script src="{% static 'operacao_rapida/emprestimo/emprestimo.js' %}"></script>
+    <!-- Evitar erros no JS do usuário comum onde os campos não existem -->
+    {% if eh_admin %}
+    <script src="{% static 'operacao_rapida/devolucao/devolucao.js' %}?v=3"></script>
+    <script src="{% static 'operacao_rapida/emprestimo/emprestimo.js' %}"></script>
+    {% endif %}
+    
+    <script src="{% static 'operacao_rapida/page_user/page_user.js' %}"></script>
 
 </body>
 </html>

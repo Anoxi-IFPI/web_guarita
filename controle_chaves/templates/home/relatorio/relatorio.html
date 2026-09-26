@@ -85,11 +85,13 @@
                             </select>
                         </div>
                     </div>
-                    <div class="mt-4 d-flex gap-2">
-                        <button type="submit" class="btn text-white fw-semibold px-4" style="background-color: var(--ifpi-verde, #1b8c3e);">
+                    <!-- BOTÕES DE PESQUISA (Ajustados para Celular e PC) -->
+                    <!-- d-grid empilha no celular; d-md-flex coloca lado a lado no PC -->
+                    <div class="mt-4 d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn text-white fw-semibold px-4 py-2" style="background-color: var(--ifpi-verde, #1b8c3e);">
                             <i class="fas fa-search"></i> Pesquisar
                         </button>
-                        <a href="{% url 'relatorio_emprestimos_data' %}" class="btn btn-outline-secondary bg-white fw-semibold px-4">                            
+                        <a href="{% url 'relatorio_emprestimos_data' %}" class="btn btn-outline-secondary bg-white fw-semibold px-4 py-2 d-flex justify-content-center align-items-center">                            
                             <i class="fas fa-eraser"></i> Limpar
                         </a>
                     </div>

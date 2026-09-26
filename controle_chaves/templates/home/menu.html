@@ -6,7 +6,6 @@
     
     <div class="p-3 d-flex align-items-center border-bottom border-dark">
         <div class="bg-success rounded-circle d-inline-block" style="width: 40px; height: 40px; line-height: 40px; text-align: center; font-weight: bold;">
-            
         </div>
         <div class="ms-3">
             <h6 class="mb-0">Painel</h6>
@@ -14,9 +13,13 @@
     </div>
 
     <ul class="nav flex-column mt-2">
+        
+        <!-- BLOCO RESTRITO: Só aparece para ADMIN ou GUARITA -->
+        {% if request.user.is_superuser or request.user.perfil.vinculo in 'GUARITA,ADMIN' %}
+        
         <li class="nav-item">
             <a href="{% url 'painel_admin' %}" class="nav-link active">
-                <i class="fas fa-home"></i> <span>Home</span>
+                <i class="fas fa-home"></i> <span>Home Admin</span>
             </a>
         </li>
 
@@ -49,7 +52,10 @@
         </li>
 
         <li class="nav-item">
-            <a href="#" class="nav-link"> <i class="fas fa-file-alt"></i> <span>Relatórios</span></a>
+            <a href="{% url 'relatorio_emprestimos_data' %}" class="nav-link"> <i class="fas fa-file-alt"></i> <span>Relatórios</span></a>
         </li>
+        
+        {% endif %}
+        <!-- FIM DO BLOCO RESTRITO -->
     </ul>
 </div>

@@ -17,10 +17,40 @@
 
         <div class="card-body p-4 bg-light">
             
+            <!-- ========================================== -->
+            <!-- FILTROS PRINCIPAIS (BANCO DE DADOS)        -->
+            <!-- ========================================== -->
+            <form method="GET" class="row g-2 mb-4 bg-white p-3 rounded shadow-sm border align-items-end">
+                <div class="col-md-{% if eh_admin %}4{% else %}8{% endif %}">
+                    <label class="form-label small text-muted fw-bold mb-1"><i class="fas fa-calendar-alt"></i> Filtrar por Data</label>
+                    <input type="date" name="data" class="form-control shadow-sm" value="{{ data_filtrada }}">
+                </div>
+                
+                {% if eh_admin %}
+                <div class="col-md-5">
+                    <label class="form-label small text-muted fw-bold mb-1"><i class="fas fa-user"></i> Filtrar por Usuário</label>
+                    <select name="usuario" class="form-select shadow-sm">
+                        <option value="Todos">Todos os usuários</option>
+                        {% for u in usuarios_lista %}
+                            <option value="{{ u.id }}" {% if usuario_filtrado == u.id|stringformat:"s" %}selected{% endif %}>{{ u.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-success shadow-sm fw-bold w-100"><i class="fas fa-filter"></i> Buscar Histórico</button>
+                </div>
+            </form>
+
+            <hr class="mb-4">
+
+            <!-- ========================================== -->
+            <!-- BUSCA E FILTROS RÁPIDOS NA TELA (JS)       -->
+            <!-- ========================================== -->
             <div class="input-group mb-4 shadow-sm" style="max-width: 500px;">
                 <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                <!-- TEXTO DO PLACEHOLDER ATUALIZADO AQUI -->
-                <input type="text" id="pesquisa-texto" class="form-control border-start-0 ps-0" placeholder="Buscar por chave ou setor...">
+                <input type="text" id="pesquisa-texto" class="form-control border-start-0 ps-0" placeholder="Buscar na lista abaixo (chave, setor, nome)...">
             </div>
 
             <div class="d-flex gap-2 mb-4 flex-wrap" id="container-filtros">
@@ -50,5 +80,5 @@
 {{ movimentos_json|json_script:"movimentos-data" }}
 
 <!-- Lembre-se de aumentar o 'v=' se o navegador não carregar o novo JS -->
-<script src="{% static 'historico/historico.js' %}?v=3"></script>
+<script src="{% static 'historico/historico.js' %}?v=6"></script>
 {% endblock conteudo %}

@@ -3,13 +3,17 @@ from . import views
 
 urlpatterns = [
     
-    # --- ROTAS DE USUÁRIOS ---
-# --- ROTA INICIAL (OPERAÇÃO RÁPIDA) ---
-    path('', views.operacao_rapida, name='operacao_rapida'),
+   # --- ROTA INICIAL (AGORA É O LOGIN PADRÃO) ---
+    path('', views.login_usuario, name='login_usuario'),
+    path('logout/', views.logout_usuario, name='logout_usuario'),
+    
+    # --- ROTA DA OPERAÇÃO RÁPIDA (Ganhou um endereço próprio) ---
+    path('operacao-rapida/', views.operacao_rapida, name='operacao_rapida'),
     
     # --- ROTA DO PAINEL ADMIN (Antiga Home) ---
     path('painel/', views.painel_admin, name='painel_admin'),
     
+    # --- ROTAS DE USUÁRIOS ---
     path('usuarios/cadastrar/', views.cadastrar_usuario, name='cadastrar_usuario'),
     path('usuarios/listar/', views.listar_usuario, name='listar_usuario'),   
     path('usuarios/editar/<int:id>', views.editar_usuario, name='editar_usuario'),
@@ -43,4 +47,12 @@ urlpatterns = [
     
     #ROTAS DE RELATÓRIOS
     path('relatorios/emprestimos/data/', views.relatorio_emprestimos_data, name='relatorio_emprestimos_data'),
+    
+    # ROTAS DE REPASSES
+    path('api/repasse/confirmar/', views.api_confirmar_repasse, name='api_confirmar_repasse'),
+    path('api/buscar-usuarios/', views.api_buscar_usuarios, name='api_buscar_usuarios'),
+    path('minhas-chaves/', views.tela_repasse, name='tela_repasse'),
+    path('minhas-chaves/<int:id>/', views.tela_repasse, name='tela_repasse_teste'),
+    path('api/admin/buscar-chave-repasse/', views.api_admin_buscar_chave_repasse, name='api_admin_buscar_chave_repasse'),
+    path('api/admin/buscar-chaves-usuario/', views.api_admin_buscar_chaves_usuario, name='api_admin_buscar_chaves_usuario'),
 ]
