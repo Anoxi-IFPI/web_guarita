@@ -809,25 +809,40 @@ def api_buscar_usuarios(request):
 @login_required(login_url='/')
 def confirmar_repasse_usuario(request, emprestimo_id):
     """
-    Página dedicada para o aluno repassar a sua chave passo-a-passo.
+    Página dedicada para repassar a chave. 
+    Admin pode repassar qualquer chave; Aluno apenas a sua.
     """
+    # 1. Verifica se quem está logado é Admin ou Guarita
+    eh_admin = False
+    if request.user.is_superuser:
+        eh_admin = True
+    elif hasattr(request.user, 'perfil') and request.user.perfil.vinculo in ['GUARITA', 'ADMIN']:
+        eh_admin = True
+
     try:
-        # Tenta encontrar a chave APENAS se estiver ativa e no nome do aluno logado
-        emprestimo = Emprestimo.objects.get(
-            id=emprestimo_id, 
-            usuario=request.user.perfil,
-            status='NOVO'
-        )
+        if eh_admin:
+            # Se for admin, pega o empréstimo apenas pelo ID (não importa com quem está a chave)
+            emprestimo = Emprestimo.objects.get(
+                id=emprestimo_id, 
+                status='NOVO'
+            )
+        else:
+            # Se for aluno, EXIGE que o usuário logado seja o dono da chave
+            emprestimo = Emprestimo.objects.get(
+                id=emprestimo_id, 
+                usuario=request.user.perfil,
+                status='NOVO'
+            )
+            
     except Emprestimo.DoesNotExist:
-        messages.error(request, 'Não foi possível encontrar esta chave ou já não está na sua posse.')
+        messages.error(request, 'Não foi possível encontrar esta chave ou já não está ativa.')
         return redirect('tela_repasse')
 
     contexto = {
         'emprestimo': emprestimo,
     }
-    # Vamos chamar o ficheiro HTML de confirmar_repasse.html
+    
     return render(request, 'home/emprestimos/confirmar_repasse.html', contexto)
-
 
 @login_required(login_url='/')
 def sucesso_repasse(request):

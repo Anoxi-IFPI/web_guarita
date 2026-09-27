@@ -1,4 +1,4 @@
-    const containerResultados = document.getElementById('lista-resultados-admin');
+const containerResultados = document.getElementById('lista-resultados-admin');
     const inputCodigo = document.getElementById('codigo-chave-admin');
     const selectUsuario = document.getElementById('select-usuario-admin');
     const contadorResultados = document.getElementById('contador-resultados-admin');
@@ -49,7 +49,6 @@
         });
     }
 
-// Substitua a função renderizarCardsAdmin por esta:
 function renderizarCardsAdmin(emprestimos) {
     if (!containerResultados) return;
     
@@ -72,8 +71,6 @@ function renderizarCardsAdmin(emprestimos) {
         
         item.innerHTML = `
             <div class="card-body p-3 bg-white">
-                
-                <!-- Parte de Cima: Ícone e Dados -->
                 <div class="d-flex align-items-start gap-3">
                     <div class="bg-success bg-opacity-10 text-success rounded p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 45px; height: 45px;">
                         <i class="fas fa-key fs-5"></i>
@@ -81,45 +78,36 @@ function renderizarCardsAdmin(emprestimos) {
                     
                     <div class="flex-grow-1">
                         <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">${emp.chave_nome}</h6>
-                        
-                        <!-- Setor e Código lado a lado -->
                         <div class="text-muted d-flex flex-wrap gap-3 mb-2" style="font-size: 0.85rem;">
                             <span><i class="fas fa-map-marker-alt fa-fw"></i> ${emp.setor}</span>
                             <span><i class="fas fa-barcode fa-fw"></i> #${String(emp.chave_id).padStart(2, '0')}</span>
                         </div>
-                        
-                        <!-- Usuário isolado para não amassar -->
                         <div class="text-primary fw-semibold" style="font-size: 0.85rem; line-height: 1.3;">
                             <i class="fas fa-user fa-fw"></i> Com: ${emp.usuario_atual_nome}
                         </div>
                     </div>
                 </div>
                 
-                <!-- Parte de Baixo: Data e Botão em coluna -->
-                <div class="d-flex flex-column border-top pt-3 mt-3 gap-2">
+                <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center border-top pt-3 mt-3 gap-3">
                     <div class="text-muted fw-bold small">
                         <i class="far fa-clock"></i> ${emp.data_emprestimo}
                     </div>
                     
-                    <button type="button" 
-                            class="btn text-white fw-bold d-flex align-items-center justify-content-center gap-2 px-3 py-2 border-0 shadow-sm w-100"
-                            style="background-color: #f58623; border-radius: 6px; font-size: 0.9rem;"
-                            data-emprestimo-id="${emp.id}"
-                            data-chave-nome="${emp.chave_nome}"
-                            data-chave-setor="${emp.setor}"
-                            data-chave-id="${emp.chave_id}"
-                            data-usuario-nome="${emp.usuario_atual_nome}"
-                            onclick="abrirModalRepasse(this)">
-                        <i class="fas fa-exchange-alt"></i> Repassar
-                    </button>
+                    <!-- WRAPPER COM CLASSES CORRETAS: Garante proporção correta no PC e Mobile -->
+                    <div class="d-grid d-md-block">
+                        <!-- USO DA TAG <a> COM Z-INDEX: Clique nativo e blindado contra bloqueios -->
+                        <a href="/confirmar-repasse-usuario/${emp.id}/" 
+                           class="btn text-white fw-bold d-flex align-items-center justify-content-center gap-2 px-4 py-2 border-0 shadow-sm w-100"
+                           style="background-color: #f58623; border-radius: 6px; font-size: 0.9rem; position: relative; z-index: 9999;">
+                            <i class="fas fa-exchange-alt"></i> Repassar
+                        </a>
+                    </div>
                 </div>
-
             </div>
         `;
         containerResultados.appendChild(item);
     });
 }
-
 
     // Busca bipe do código
     function buscarChavePorCodigo(codigo) {
