@@ -5,16 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Operação Rápida - Gestão de Chaves IFPI</title>
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!--Arquivo Local Desing pagina inicial -->
-    <link rel="stylesheet" href="{% static 'operacao_rapida/page_adm/inicial.css' %}">
 
+<link rel="stylesheet" href="{% static 'operacao_rapida/page_adm/inicial.css' %}?v=5">
 </head>
-<body>
+<body class="d-flex flex-column" style="min-height: 100dvh; margin: 0; overflow-x: hidden;">
+
+    <!-- HEADER -->
     <header class="header-top">
         <div class="logo-area">
             <div class="icon"><i class="fas fa-key"></i></div>
@@ -22,13 +22,13 @@
         </div>
         <div class="header-actions">
             <span class="time" id="currentTime"></span>
-        <a href="{% url 'logout_usuario' %}" class="btn text-white fw-semibold" style="background-color: #dc3545;">
-            <i class="fas fa-sign-out-alt"></i> Sair
-        </a>       
- </div>
+            <a href="{% url 'logout_usuario' %}" class="btn text-white fw-semibold" style="background-color: #dc3545;">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
     </header>
 
-    <!-- ÁREA DE MENSAGENS FLUTUANTES -->
+    <!-- MENSAGENS FLUTUANTES -->
     <div class="mensagens-flutuantes">
         {% if messages %}
             {% for message in messages %}
@@ -40,8 +40,9 @@
         {% endif %}
     </div>
 
-    <div class="main-container container-fluid">
-        
+    <!-- MAIN CONTAINER -->
+    <div class="main-container container-fluid flex-grow-1 d-flex flex-column justify-content-center pb-3">
+
         {% if eh_admin %}
         <div class="cards-grid">
             <!-- 1. FORMULÁRIO DE EMPRÉSTIMO -->
@@ -93,69 +94,69 @@
             </div>
         </div>
         {% else %}
-        <!-- MENSAGEM AMIGÁVEL PARA O USUÁRIO COMUM -->
-        <div class="text-center mt-5">
+        <!-- MENSAGEM PARA USUÁRIO COMUM -->
+        <div class="text-center mt-5 mb-auto">
             <i class="fas fa-user-shield text-success mb-3" style="font-size: 4rem;"></i>
             <h2 class="text-secondary fw-bold">Bem-vindo(a), {{ request.user.first_name|default:"Usuário" }}!</h2>
-            <p class="text-muted fs-5 mt-2">Utilize os botões abaixo para gerenciar os repasses de suas chaves e visualizar e consultar o histórico diário emprestimos, devoluções e repasses.</p>
+            <p class="text-muted fs-5 mt-2">Utilize os botões abaixo para gerenciar os repasses de suas chaves e visualizar o histórico diário.</p>
         </div>
         {% endif %}
 
-    </div>
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- TASKBAR — ILHA TRANSLÚCIDA AZUL CLARO                       -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <div class="taskbar-wrapper mt-auto pt-3 w-100">
+            <div class="custom-taskbar">
 
-    <!-- TASKBAR INFERIOR AJUSTADA PARA MOBILE E WEB -->
-    <!-- TASKBAR INFERIOR COMPACTA E ORGANIZADA (GRID BOOTSTRAP) -->
-    <div class="taskbar mt-3 p-3 bg-light rounded shadow-sm border">
-        <div class="row g-2 justify-content-center">
-            
-            <!-- VISÍVEL PARA TODOS -->
-            <!-- col-6 faz ocupar 50% no celular, col-md-auto ajusta o tamanho no PC -->
-            <div class="col-6 col-md-auto">
-                <a href="{% url 'tela_repasse' %}" class="btn text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: #f58623; border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;">
-                    <i class="fas fa-exchange-alt"></i> Repassar
-                </a>
-            </div>
-            
-            <div class="col-6 col-md-auto">
-                <a href="{% url 'painel_historico' %}" class="btn text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: #0d47a1; border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;">
-                    <i class="fas fa-history"></i> Histórico
-                </a>
-            </div>
+                <!-- GRID DE BOTÕES -->
+                <div class="taskbar-buttons">
+                    <!-- Visível para todos -->
+                    <a href="{% url 'tela_repasse' %}" class="custom-btn" style="background-color: #f58623;">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>repasses</span>
+                    </a>
 
-            <!-- VISÍVEL APENAS PARA ADMIN -->
-            {% if eh_admin %}
-            <div class="col-6 col-md-auto">
-                <a href="{% url 'listar_emprestimos' %}" class="btn text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: var(--ifpi-verde, #1b8c3e); border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;">
-                    <i class="fas fa-list-ul"></i> Empréstimos
-                </a>
+                    <a href="{% url 'painel_historico' %}" class="custom-btn" style="background-color: #0d47a1;">
+                        <i class="fas fa-history"></i>
+                        <span>Histórico</span>
+                    </a>
+
+                    <!-- Visível apenas para admin -->
+                    {% if eh_admin %}
+                    <a href="{% url 'listar_emprestimos' %}" class="custom-btn" style="background-color: #1b8c3e;">
+                        <i class="fas fa-list-ul"></i>
+                        <span>Empréstimos</span>
+                    </a>
+
+                    <a href="{% url 'relatorio_emprestimos_data' %}" class="custom-btn" style="background-color: #7b1fa2;">
+                        <i class="fas fa-search"></i>
+                        <span>Consulta</span>
+                    </a>
+                    {% endif %}
+                </div>
+
+                <!-- Botão Admin -->
+                {% if eh_admin %}
+                <div class="taskbar-admin">
+                    <a href="{% url 'painel_admin' %}" class="custom-btn btn-admin">
+                        <i class="fas fa-cog"></i>
+                        <span>Admin</span>
+                    </a>
+                </div>
+                {% endif %}
+
             </div>
-            
-            <div class="col-6 col-md-auto">
-                <a href="{% url 'relatorio_emprestimos_data' %}" class="btn text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="background-color: #7b1fa2; border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;">
-                    <i class="fas fa-file-alt"></i> Relatórios
-                </a>
-            </div>
-            
-            <!-- col-12 faz o Admin ocupar a linha toda no celular, como botão principal -->
-            <div class="col-12 col-md-auto mt-2 mt-md-0">
-                <a href="{% url 'painel_admin' %}" class="btn btn-danger fw-bold w-100 d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;">
-                    <i class="fas fa-cog"></i> Admin
-                </a>
-            </div>
-            {% endif %}
-            
         </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Evitar erros no JS do usuário comum onde os campos não existem -->
+
     {% if eh_admin %}
     <script src="{% static 'operacao_rapida/devolucao/devolucao.js' %}?v=3"></script>
     <script src="{% static 'operacao_rapida/emprestimo/emprestimo.js' %}"></script>
     {% endif %}
-    
-    <script src="{% static 'operacao_rapida/page_user/page_user.js' %}"></script>
 
+    <script src="{% static 'operacao_rapida/page_user/page_user.js' %}"></script>
 </body>
 </html>

@@ -60,34 +60,36 @@ def operacao_rapida(request):
 # VIEWS DE LOGIN E AUTENTICAÇÃO
 # ==========================================
 def login_usuario(request):
-    # REGRA NOVA: Se já estiver logado, redireciona TODOS para a operação rápida
     if request.user.is_authenticated:
         return redirect('operacao_rapida')
 
     if request.method == 'POST':
         matricula = request.POST.get('matricula', '').strip()
         senha = request.POST.get('senha', '').strip()
+        
+        # === ADICIONE ESTES PRINTS PARA DIAGNÓSTICO ===
+        print(f"--- TENTATIVA DE LOGIN ---")
+        print(f"Matrícula digitada: '{matricula}'")
+        print(f"Senha digitada: '{senha}'")
+        
+        # Verifica se o usuário existe no banco nativo do Django
+        from django.contrib.auth.models import User
+        existe = User.objects.filter(username=matricula).exists()
+        print(f"Esse usuário existe no banco do Django? {existe}")
+        # ==============================================
 
-        # O motor do Django verifica se o usuário e a senha criptografada batem
         user = authenticate(request, username=matricula, password=senha)
 
         if user is not None:
-            # O Django cria a sessão segura automaticamente
+            # ... resto do seu código que já está correto ...
             login(request, user) 
-
-            # 1. Se for o superusuário do terminal
             if user.is_superuser:
-                messages.success(request, 'Bem-vindo, Administrador do Sistema!')
+                messages.success(request, 'Bem-vindo, Administrador!')
                 return redirect('operacao_rapida')
-
-            # 2. Se for um usuário normal (cadastrado pelo sistema)
             try:
                 perfil = user.perfil 
                 messages.success(request, f'Bem-vindo, {perfil.nome}!')
-
-                # ROTEAMENTO DE ACESSO: Todos vão para a tela de Operação Rápida
                 return redirect('operacao_rapida')
-
             except:
                 messages.error(request, 'Perfil de usuário não encontrado.')
                 logout(request)
@@ -194,6 +196,10 @@ def editar_usuario(request, id):
                     # Atualiza também o User nativo do Django (se o nome ou e-mail mudou)
                     if perfil_atualizado.user:
                         perfil_atualizado.user.username = perfil_atualizado.matricula
+                        
+                        # ---> ESTA É A LINHA QUE FALTAVA <---
+                        perfil_atualizado.user.set_password(perfil_atualizado.matricula)
+                        
                         perfil_atualizado.user.first_name = perfil_atualizado.nome.split()[0]
                         perfil_atualizado.user.email = perfil_atualizado.email
                         perfil_atualizado.user.save()
