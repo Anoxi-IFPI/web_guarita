@@ -21,19 +21,26 @@
         
         <nav class="navbar-ifpi">
             <div class="d-flex align-items-center">
+                
+                <!-- MOSTRA O BOTÃO DO MENU SANDUÍCHE APENAS PARA ADMIN -->
+                {% if request.user.is_superuser or request.user.perfil.vinculo in 'GUARITA,ADMIN' %}
                 <button class="btn-toggle" id="toggle-sidebar">
                     <i class="fas fa-bars"></i>
                 </button>
+                {% endif %}
+                
                 <h5 class="mb-0 ms-3 fw-bold">Gestão de Chaves</h5>
             </div>
             
             <div class="nav-icons d-flex align-items-center gap-3">
                 
-                <!-- RELÓGIO ADICIONADO AQUI -->
+                <!-- RELÓGIO -->
                 <span id="currentTimeBase" class="fw-bold d-none d-sm-inline text-white" style="font-size: 0.95rem;"></span>
 
-                {% comment %} <a href="#" title="Mensagens"><i class="fas fa-envelope"></i></a> {% endcomment %}
+                <!-- MOSTRA O SINO DE NOTIFICAÇÕES APENAS PARA ADMIN -->
+                {% if request.user.is_superuser or request.user.perfil.vinculo in 'GUARITA,ADMIN' %}
                 <a href="#" title="Notificações"><i class="fas fa-bell"></i></a>
+                {% endif %}
                 
                 <a href="{% url 'operacao_rapida' %}" class="btn-voltar" title="Acessar Operação Rápida">
                     <i class="fas fa-arrow-left"></i> <span>Acesso Rápido</span>
@@ -48,7 +55,7 @@
             </div>
         </nav>
 
-        <!-- ÁREA RESTAURADA: Sem isso, as páginas ficam em branco -->
+        <!-- ÁREA DE CONTEÚDO DA PÁGINA -->
         <div class="container-fluid p-4">
             {% block conteudo %}{% endblock conteudo %}
         </div>

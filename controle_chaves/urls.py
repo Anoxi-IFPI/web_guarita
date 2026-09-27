@@ -55,4 +55,8 @@ urlpatterns = [
     path('minhas-chaves/<int:id>/', views.tela_repasse, name='tela_repasse_teste'),
     path('api/admin/buscar-chave-repasse/', views.api_admin_buscar_chave_repasse, name='api_admin_buscar_chave_repasse'),
     path('api/admin/buscar-chaves-usuario/', views.api_admin_buscar_chaves_usuario, name='api_admin_buscar_chaves_usuario'),
+    
+    path('confirmar-repasse-usuario/<int:emprestimo_id>/', views.confirmar_repasse_usuario, name='confirmar_repasse_usuario'),
+    path('sucesso-repasse/', views.sucesso_repasse, name='sucesso_repasse'),
+
 ]

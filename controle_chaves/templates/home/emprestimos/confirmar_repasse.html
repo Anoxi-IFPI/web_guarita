@@ -1,0 +1,720 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block titulo %}Confirmar Repasse{% endblock %}
+
+{% block conteudo %}
+{% csrf_token %}
+
+<style>
+    /* ============================================================
+       CONFIRMAR REPASSE - Padrão IFPI
+       ============================================================ */
+
+    .bg-ifpi-verde { background-color: #1b8c3e !important; }
+    .text-ifpi-verde { color: #1b8c3e !important; }
+
+    /* ============================================================
+       HEADER DE USUÁRIO
+       ============================================================ */
+    .usuario-info-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .usuario-info-item {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .usuario-info-item .label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+    }
+
+    .usuario-info-item .value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0a2647;
+        word-break: break-word;
+    }
+
+    /* ============================================================
+       CARD DA CHAVE
+       ============================================================ */
+    .card-chave-info {
+        background: white;
+        border-radius: 8px;
+        position: relative;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+        padding: 16px 18px 16px 22px;
+    }
+
+    .card-chave-info::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background-color: #1b8c3e;
+    }
+
+    .chave-linha {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .icon-chave-bg {
+        background-color: #e8f5e9;
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .chave-dados {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .chave-dados h6 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0a2647;
+        margin: 0 0 4px 0;
+        word-break: break-word;
+    }
+
+    .chave-dados .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .chave-dados .meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .chave-data {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: #64748b;
+        background: #f8fafc;
+        padding: 6px 12px;
+        border-radius: 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* ============================================================
+       BARRA DE PESQUISA
+       ============================================================ */
+    .search-bar-custom {
+        border: 2px solid #1b8c3e;
+        border-radius: 10px;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        padding: 10px 16px;
+        transition: all 0.2s;
+    }
+
+    .search-bar-custom:focus-within {
+        box-shadow: 0 0 0 4px rgba(27, 140, 62, 0.12);
+    }
+
+    .search-bar-custom .lupa-icon {
+        color: #6c757d;
+        font-size: 1.2rem;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .search-bar-custom input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #495057;
+        background: transparent;
+        min-width: 0;
+    }
+
+    .search-bar-custom input::placeholder {
+        color: #adb5bd;
+        font-weight: 500;
+    }
+
+    /* ============================================================
+       AUTOCOMPLETE
+       ============================================================ */
+    .autocomplete-wrapper { position: relative; }
+
+    .autocomplete-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 2px solid #1b8c3e;
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        z-index: 1000;
+        max-height: 280px;
+        overflow-y: auto;
+        display: none;
+        text-align: left;
+        margin-top: -2px;
+    }
+
+    .autocomplete-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        transition: 0.15s;
+    }
+
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover { background-color: #e8f5e9; }
+
+    .autocomplete-item .nome {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #0a2647;
+        word-break: break-word;
+    }
+
+    .autocomplete-item .meta {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    /* ============================================================
+       CARD NOVO RESPONSÁVEL
+       ============================================================ */
+    .card-novo-responsavel {
+        background-color: #eafaf1;
+        border-left: 4px solid #1b8c3e;
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        position: relative;
+    }
+
+    .card-novo-responsavel .avatar {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        border-radius: 50%;
+        background: #1b8c3e;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .card-novo-responsavel .info {
+        flex: 1;
+        min-width: 0;
+        padding-right: 36px;
+    }
+
+    .card-novo-responsavel .info .titulo {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .card-novo-responsavel .info .nome {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0a2647;
+        line-height: 1.25;
+        word-break: break-word;
+        margin-bottom: 6px;
+    }
+
+    .card-novo-responsavel .info .meta {
+        font-size: 0.78rem;
+        color: #64748b;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .card-novo-responsavel .btn-fechar {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #dc3545;
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.85rem;
+        padding: 0;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .card-novo-responsavel .btn-fechar:hover {
+        background: #b71c1c;
+        transform: scale(1.05);
+    }
+
+    /* ============================================================
+       ⭐ BOTÕES DE AÇÃO — BASE DESKTOP
+       ============================================================ */
+    .acoes-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        width: 100%;
+    }
+
+    .acoes-grupo {
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+    }
+
+    .btn-acao {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 48px;
+        padding: 0 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-family: inherit;
+        line-height: 1;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .btn-acao i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        font-size: 0.9rem;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    /* Cores dos botões */
+    .btn-voltar { background-color: #6c757d; color: white; }
+    .btn-voltar:hover { background-color: #5a6268; color: white; }
+
+    .btn-cancelar { background-color: #dc3545; color: white; }
+    .btn-cancelar:hover { background-color: #b71c1c; color: white; }
+
+    .btn-confirmar { background-color: #1b8c3e; color: white; }
+    .btn-confirmar:hover:not(:disabled) { background-color: #146c2e; color: white; }
+    .btn-confirmar:disabled { background-color: #a8d5b5; cursor: not-allowed; opacity: 0.85; }
+
+    /* ============================================================
+       RESPONSIVO MOBILE (Ajustado para 767px)
+       ============================================================ */
+    @media (max-width: 767px) {
+        .usuario-info-row {
+            gap: 14px;
+        }
+
+        .usuario-info-item {
+            flex: 1 1 100%;
+        }
+
+        .usuario-info-item.half {
+            flex: 1 1 calc(50% - 7px);
+        }
+
+        .chave-data {
+            width: 100%;
+            justify-content: center;
+            margin-top: 4px;
+        }
+
+        /* Card do responsável empilhado */
+        .card-novo-responsavel {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 14px 14px 14px 18px;
+        }
+
+        .card-novo-responsavel .info {
+            padding-right: 0;
+            width: 100%;
+        }
+
+        .card-novo-responsavel .btn-fechar {
+            top: 10px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            font-size: 0.75rem;
+        }
+
+        /* CONTROLE DOS BOTÕES NO MOBILE */
+        .acoes-container {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acoes-grupo {
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-acao {
+            width: 100% !important; /* Força 100% rigoroso e idêntico para todos */
+            height: 46px;
+            padding: 0 16px;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-2 px-2 px-md-3">
+
+    <!-- CARD PRINCIPAL -->
+    <div class="card shadow mb-4 border-0">
+
+        <!-- CABEÇALHO VERDE -->
+        <div class="card-header py-3 text-white fw-bold d-flex align-items-center bg-ifpi-verde">
+            <h5 class="m-0 fw-bold d-flex align-items-center gap-2" style="font-size: 1rem;">
+                <i class="fas fa-exchange-alt"></i> Confirmar Repasse
+            </h5>
+        </div>
+
+        <!-- DADOS DO USUÁRIO ATUAL -->
+        <div class="card-body p-3 p-md-4 bg-white" style="border-bottom: 2px solid #f1f3f5;">
+            <div class="usuario-info-row">
+                <div class="usuario-info-item">
+                    <span class="label">Usuário Atual</span>
+                    <span class="value">{{ request.user.perfil.nome }}</span>
+                </div>
+                <div class="usuario-info-item half">
+                    <span class="label">Matrícula</span>
+                    <span class="value">{{ request.user.perfil.matricula }}</span>
+                </div>
+                <div class="usuario-info-item half">
+                    <span class="label">Vínculo</span>
+                    <span class="value">
+                        <span class="badge bg-primary rounded-pill px-3">{{ request.user.perfil.vinculo|default:"ALUNO" }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTEÚDO -->
+        <div class="card-body p-3 p-md-5 bg-light">
+
+            <div id="alertErroGlobal" class="alert alert-danger shadow-sm" style="display:none;"></div>
+
+            <!-- CARD DA CHAVE -->
+            <div class="mb-4">
+                <div class="card-chave-info">
+                    <div class="chave-linha">
+                        <div class="icon-chave-bg">
+                            <i class="fas fa-key text-ifpi-verde fs-5"></i>
+                        </div>
+                        <div class="chave-dados">
+                            <h6>{{ emprestimo.chave.nome }}</h6>
+                            <div class="meta">
+                                <span><i class="fas fa-map-marker-alt"></i> {{ emprestimo.chave.setor }}</span>
+                                <span><i class="fas fa-barcode"></i> {{ emprestimo.chave.id|stringformat:"02d" }}</span>
+                            </div>
+                        </div>
+                        <div class="chave-data">
+                            <i class="far fa-clock"></i>
+                            <span>{{ emprestimo.data|date:"d/m/Y H:i" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BARRA DE PESQUISA -->
+            <div class="mb-4" id="blocoPesquisaContainer">
+                <div class="autocomplete-wrapper">
+                    <div class="search-bar-custom">
+                        <i class="fas fa-search lupa-icon"></i>
+                        <input type="text"
+                               id="inputPesquisaNome"
+                               placeholder="Digite o nome do aluno/funcionário"
+                               oninput="pesquisarUsuarioLive()"
+                               autocomplete="off">
+                    </div>
+                    <div id="dropdownResultados" class="autocomplete-dropdown"></div>
+                </div>
+            </div>
+
+            <!-- CARD NOVO RESPONSÁVEL -->
+            <div class="mb-4" id="novoUsuarioEncontrado" style="display:none;">
+                <div class="card-novo-responsavel">
+                    <div class="avatar" id="novoAvatar">?</div>
+                    <div class="info">
+                        <span class="titulo">Nova responsável</span>
+                        <div class="nome" id="novoNome">—</div>
+                        <div class="meta" id="novoVinculo">—</div>
+                    </div>
+                    <button class="btn-fechar" onclick="limparPesquisa()" title="Cancelar seleção">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- BOTÕES DE AÇÃO — Layout CSS Flexbox Customizado         -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <div class="acoes-container mt-4">
+                
+                <!-- Botão Voltar -->
+                <a href="{% url 'tela_repasse' %}" class="btn-acao btn-voltar text-decoration-none">
+                    <i class="fas fa-chevron-left"></i>
+                    <span class="ms-1" style="display: inline-block !important; visibility: visible !important;">Voltar</span>
+                </a>
+
+                <!-- Grupo Cancelar e Confirmar -->
+                <div class="acoes-grupo">
+                    <!-- Botão Cancelar -->
+                    <button type="button" class="btn-acao btn-cancelar" onclick="limparPesquisa()">
+                        <i class="fas fa-times"></i>
+                        <span>Cancelar</span>
+                    </button>
+
+                    <!-- Botão Confirmar -->
+                    <button type="button" class="btn-acao btn-confirmar" onclick="confirmarRepasseReal('{{ emprestimo.chave.id }}')" id="btnConfirmarFinal" disabled>
+                        <i class="fas fa-check-circle"></i>
+                        <span>Confirmar</span>
+                    </button>
+                </div>
+                
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let usuarioNovoSelecionadoId = null;
+    let timerBusca;
+    let enviando = false;
+
+    /* ============================================================
+       BUSCA AO VIVO
+       ============================================================ */
+    function pesquisarUsuarioLive() {
+        clearTimeout(timerBusca);
+        const termo = document.getElementById('inputPesquisaNome').value.trim();
+        const dropdown = document.getElementById('dropdownResultados');
+
+        if (termo.length < 2) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        timerBusca = setTimeout(() => {
+            fetch(`/api/buscar-usuarios/?q=${encodeURIComponent(termo)}`)
+                .then(res => res.json())
+                .then(data => {
+                    dropdown.innerHTML = '';
+
+                    if (data.usuarios && data.usuarios.length > 0) {
+                        data.usuarios.forEach(user => {
+                            const item = document.createElement('div');
+                            item.className = 'autocomplete-item';
+                            item.innerHTML = `
+                                <div class="nome">
+                                    <i class="fas fa-user-circle text-muted me-2"></i>${user.nome}
+                                </div>
+                                <div class="meta">
+                                    ${user.vinculo} | Matrícula: ${user.matricula}
+                                </div>
+                            `;
+                            item.onclick = () => selecionarUsuario(user);
+                            dropdown.appendChild(item);
+                        });
+                        dropdown.style.display = 'block';
+                    } else {
+                        dropdown.innerHTML = `
+                            <div class="autocomplete-item text-muted text-center">
+                                <i class="fas fa-search me-2"></i>Nenhum usuário encontrado.
+                            </div>
+                        `;
+                        dropdown.style.display = 'block';
+                    }
+                });
+        }, 300);
+    }
+
+    /* ============================================================
+       SELECIONAR USUÁRIO
+       ============================================================ */
+    function selecionarUsuario(user) {
+        const dropdown = document.getElementById('dropdownResultados');
+        const alertBox = document.getElementById('alertErroGlobal');
+
+        dropdown.style.display = 'none';
+        document.getElementById('inputPesquisaNome').value = '';
+
+        if (user.matricula === "{{ request.user.perfil.matricula }}") {
+            alertBox.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Você não pode repassar a chave para você mesmo.';
+            alertBox.style.display = 'block';
+            return;
+        }
+
+        alertBox.style.display = 'none';
+        usuarioNovoSelecionadoId = user.id;
+
+        const iniciais = user.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        document.getElementById('novoAvatar').textContent = iniciais;
+        document.getElementById('novoNome').textContent = user.nome;
+        document.getElementById('novoVinculo').textContent = `${user.vinculo} | Matrícula: ${user.matricula}`;
+
+        document.getElementById('blocoPesquisaContainer').style.display = 'none';
+        document.getElementById('novoUsuarioEncontrado').style.display = 'block';
+
+        document.getElementById('btnConfirmarFinal').disabled = false;
+    }
+
+    /* ============================================================
+       LIMPAR PESQUISA
+       ============================================================ */
+    function limparPesquisa() {
+        usuarioNovoSelecionadoId = null;
+        enviando = false;
+        document.getElementById('novoUsuarioEncontrado').style.display = 'none';
+        document.getElementById('blocoPesquisaContainer').style.display = 'block';
+        document.getElementById('inputPesquisaNome').value = '';
+
+        document.getElementById('btnConfirmarFinal').disabled = true;
+
+        document.getElementById('inputPesquisaNome').focus();
+    }
+
+    /* ============================================================
+       CONFIRMAR REPASSE
+       ============================================================ */
+    function confirmarRepasseReal(chaveId) {
+        if (enviando) return;
+
+        if (!usuarioNovoSelecionadoId) {
+            const alertBox = document.getElementById('alertErroGlobal');
+            alertBox.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Selecione um usuário antes de confirmar.';
+            alertBox.style.display = 'block';
+            return;
+        }
+
+        enviando = true;
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const alertBox = document.getElementById('alertErroGlobal');
+        const btn = document.getElementById('btnConfirmarFinal');
+
+        alertBox.style.display = 'none';
+        btn.disabled = true;
+
+        fetch("{% url 'api_confirmar_repasse' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                chave_id: chaveId,
+                novo_usuario_id: usuarioNovoSelecionadoId
+            })
+        })
+        .then(res => res.json())
+        .then(dados => {
+            if (dados.sucesso) {
+                window.location.href = "{% url 'sucesso_repasse' %}?chave={{ emprestimo.chave.nome }}&de={{ request.user.perfil.nome|urlencode }}&para=" + encodeURIComponent(document.getElementById('novoNome').textContent);
+            } else {
+                enviando = false;
+                btn.disabled = false;
+                alertBox.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + (dados.erro || 'Erro ao processar.');
+                alertBox.style.display = 'block';
+            }
+        })
+        .catch(() => {
+            enviando = false;
+            btn.disabled = false;
+            alertBox.innerHTML = '<i class="fas fa-wifi me-2"></i>Erro de conexão. Tente novamente.';
+            alertBox.style.display = 'block';
+        });
+    }
+
+    /* ============================================================
+       ENTER PARA CONFIRMAR (GLOBAL)
+       ============================================================ */
+    document.addEventListener('keydown', function(e) {
+        // Se a tecla pressionada for Enter, houver um usuário selecionado e o formulário não estiver sendo enviado
+        if (e.key === 'Enter' && usuarioNovoSelecionadoId && !enviando) {
+            e.preventDefault(); // Evita comportamentos padrão como submissão de outros forms ou recarregamento
+            confirmarRepasseReal('{{ emprestimo.chave.id }}');
+        }
+    });
+
+    /* ============================================================
+       FECHAR DROPDOWN
+       ============================================================ */
+    document.addEventListener('click', function(event) {
+        const wrapper = document.querySelector('.autocomplete-wrapper');
+        const dropdown = document.getElementById('dropdownResultados');
+        if (wrapper && !wrapper.contains(event.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+</script>
+{% endblock conteudo %}

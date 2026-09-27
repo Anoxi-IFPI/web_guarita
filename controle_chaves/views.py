@@ -105,19 +105,6 @@ def logout_usuario(request):
     return redirect('login_usuario')
 
 
-
-# ==========================================
-# VIEWS PARA PAGINA INICIAL                     
-# ========================================== 
-# Nova tela inicial (Operação Rápida)
-# ==========================================
-# VIEWS PARA A TELA "MINHAS CHAVES" E BUSCA
-# ==========================================
-# ==========================================
-# VIEWS PARA A TELA "MINHAS CHAVES" E BUSCA
-# ==========================================
-
-
 # ==========================================
 # PAINEL ADM COM FUNCIONALIDADES INTERNAS 
 # ==========================================
@@ -817,6 +804,41 @@ def api_buscar_usuarios(request):
         })
         
     return JsonResponse({'usuarios': lista})
+
+#faz o repasse das chaves entre usuários, mas só se o usuário logado for o dono da chave
+@login_required(login_url='/')
+def confirmar_repasse_usuario(request, emprestimo_id):
+    """
+    Página dedicada para o aluno repassar a sua chave passo-a-passo.
+    """
+    try:
+        # Tenta encontrar a chave APENAS se estiver ativa e no nome do aluno logado
+        emprestimo = Emprestimo.objects.get(
+            id=emprestimo_id, 
+            usuario=request.user.perfil,
+            status='NOVO'
+        )
+    except Emprestimo.DoesNotExist:
+        messages.error(request, 'Não foi possível encontrar esta chave ou já não está na sua posse.')
+        return redirect('tela_repasse')
+
+    contexto = {
+        'emprestimo': emprestimo,
+    }
+    # Vamos chamar o ficheiro HTML de confirmar_repasse.html
+    return render(request, 'home/emprestimos/confirmar_repasse.html', contexto)
+
+
+@login_required(login_url='/')
+def sucesso_repasse(request):
+    """Tela de sucesso após repasse"""
+    contexto = {
+        'chave_nome': request.GET.get('chave', '-'),
+        'de_nome': request.GET.get('de', '-'),
+        'para_nome': request.GET.get('para', '-'),
+        'data_atual': timezone.now(),
+    }
+    return render(request, 'home/emprestimos/resumo_sucesso_repasse.html', contexto)
 
 # ==========================================
 # VIEWS PARA ACOMPANHAMENTO E HITÓRICO DE EMPRESTIMOS

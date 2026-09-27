@@ -111,7 +111,8 @@
             <div class="card-body p-3 bg-light">
 
                 {% for emp in chaves_em_posse %}
-                    <!-- NOVO CARD ESTILO CELULAR/HISTÓRICO -->
+
+                <!-- NOVO CARD ESTILO RESPONSIVO -->
                     <div class="card border-0 border-start border-4 border-success shadow-sm mb-3">
                         <div class="card-body p-3 bg-white">
                             
@@ -133,25 +134,23 @@
                                 </div>
                             </div>
                             
-                            <!-- Parte de Baixo: Data em cima, Botão embaixo -->
-                            <!-- d-flex flex-column coloca os itens em coluna (um embaixo do outro) -->
-                            <div class="d-flex flex-column border-top pt-3 mt-3 gap-2">
+                            <!-- Parte de Baixo: Responsiva (Coluna no Celular, Linha no PC) -->
+                            <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center border-top pt-3 mt-3 gap-3">
                                 <div class="text-muted fw-bold small">
                                     <i class="far fa-clock"></i> {{ emp.data|date:"d/m/Y H:i" }}
                                 </div>
                                 
-                                <!-- w-100 faz o botão ocupar toda a largura, evitando esmagamento -->
-                                <button type="button"
-                                        class="btn text-white fw-bold d-flex align-items-center justify-content-center gap-2 px-3 py-2 border-0 shadow-sm w-100"
-                                        style="background-color: #f58623; border-radius: 6px; font-size: 0.9rem;"
-                                        data-emprestimo-id="{{ emp.id }}"
-                                        data-chave-nome="{{ emp.chave.nome }}"
-                                        data-chave-setor="{{ emp.chave.setor }}"
-                                        data-chave-id="{{ emp.chave.id }}"
-                                        data-usuario-nome="{{ usuario.nome }}"
-                                        onclick="abrirModalRepasse(this)">
-                                    <i class="fas fa-exchange-alt"></i> Repassar
-                                </button>
+                                <!-- Botão de Repasse (Ajustado para PC) -->
+                                <div>
+                                    <!-- Botão de Repasse (Ajustado para PC) -->
+                                    <div>
+                                        <a href="{% url 'confirmar_repasse_usuario' emp.id %}" 
+                                        class="btn text-white fw-bold d-flex align-items-center justify-content-center gap-2 px-4 py-2 border-0 shadow-sm w-100"
+                                        style="background-color: #f58623; border-radius: 6px; font-size: 0.9rem;">
+                                            <i class="fas fa-exchange-alt"></i> Repassar
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
 
                         </div>
