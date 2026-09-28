@@ -79,7 +79,7 @@
                             <select name="status" class="form-select text-secondary">
                                 <option value="Todos">Todos</option>
                                 <!-- Ajustado os values conforme seu banco de dados -->
-                                <option value="NOVO" {% if request.GET.status == 'NOVO' %}selected{% endif %}>Novo (Ativo)</option>
+                                <option value="NOVO" {% if request.GET.status == 'NOVO' %}selected{% endif %}>Novo (EMPRESTIMO)</option>
                                 <option value="DEVOLVIDO" {% if request.GET.status == 'DEVOLVIDO' %}selected{% endif %}>Devolvido</option>
                                 <option value="REPASSADO" {% if request.GET.status == 'REPASSADO' %}selected{% endif %}>Repassado</option>
                             </select>
@@ -110,6 +110,7 @@
                 
                 <div class="table-responsive">
                     <table class="table table-hover table-custom align-middle mb-0">
+                        <!-- Cabeçalho da Tabela -->
                         <thead class="text-muted">
                             <tr>
                                 <th class="py-3 px-4 border-bottom-2">ID</th>
@@ -119,13 +120,15 @@
                                 <th class="py-3 px-4 border-bottom-2">MATRÍCULA</th>
                                 <th class="py-3 px-4 border-bottom-2">DATA/HORA</th>
                                 <th class="py-3 px-4 border-bottom-2">STATUS</th>
+                                <th class="py-3 px-4 border-bottom-2">OBSERVAÇÃO</th> <!-- NOVA COLUNA -->
                             </tr>
                         </thead>
+
+                        <!-- Corpo da Tabela -->
                         <tbody style="font-size: 13px;" class="text-secondary fw-medium">
                             {% for emp in emprestimos %}
                             <tr>
                                 <td class="px-4">{{ emp.id }}</td>
-                                <!-- Agora usamos os nomes diretos das chaves do dicionário gerado no Python -->
                                 <td class="px-4 fw-bold text-dark">{{ emp.chave_nome }}</td>
                                 <td class="px-4 text-dark">{{ emp.setor }}</td>
                                 <td class="px-4 text-dark">{{ emp.usuario_nome }}</td>
@@ -133,17 +136,27 @@
                                 <td class="px-4">{{ emp.data_hora|date:"d/m/Y H:i" }}</td>
                                 <td class="px-4">
                                     {% if emp.status == 'NOVO' %}
-                                        <span class="status-badge status-ativo">ATIVO</span>
+                                        <span class="status-badge status-ativo">EMPRESTIMO</span>
                                     {% elif emp.status == 'DEVOLVIDO' %}
                                         <span class="status-badge status-devolvido">DEVOLVIDO</span>
                                     {% elif emp.status == 'REPASSADO' %}
                                         <span class="status-badge status-repassado">REPASSADO</span>
                                     {% endif %}
                                 </td>
+                                <!-- NOVA COLUNA PARA OBSERVAÇÃO DO REPASSE -->
+                                <td class="px-4">
+                                    {% if emp.info_repasse %}
+                                        <span class="text-muted fw-bold" style="color: #fd7e14 !important; font-size: 11px;">
+                                            <i class="fas fa-exchange-alt"></i> {{ emp.info_repasse }}
+                                        </span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">
+                                <td colspan="8" class="text-center py-4 text-muted"> <!-- Mudei o colspan de 7 para 8 -->
                                     Nenhum empréstimo encontrado com os filtros informados.
                                 </td>
                             </tr>

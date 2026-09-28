@@ -863,10 +863,10 @@ def sucesso_repasse(request):
 def painel_historico(request):
     """
     Histórico de movimentações.
-    Admin vê tudo, usuário comum vê só o dele.
+    Agora TODOS os usuários podem ver o histórico completo.
     Filtra as movimentações por data alvo (padrão = hoje) para evitar lentidão.
     """
-    # Verifica se é admin
+    # Verifica se é admin (mantido apenas para controle de botões no HTML, se houver)
     eh_admin = request.user.is_superuser or (hasattr(request.user, 'perfil') and request.user.perfil.vinculo in ['GUARITA', 'ADMIN'])
 
     # Captura os parâmetros do filtro
@@ -882,17 +882,15 @@ def painel_historico(request):
     else:
         data_alvo = timezone.now().date()
 
-    # Prepara a QueryBase e a lista de usuários
-    if eh_admin:
-        qs = Emprestimo.objects.exclude(status='SOLICITADO')
-        usuarios_lista = Usuario.objects.all().order_by('nome')
-    else:
-        qs = Emprestimo.objects.filter(usuario=request.user.perfil).exclude(status='SOLICITADO')
-        usuarios_lista = []
+    # --- MUDANÇA AQUI ---
+    # Agora a consulta principal traz tudo para TODOS os usuários
+    qs = Emprestimo.objects.exclude(status='SOLICITADO')
+    usuarios_lista = Usuario.objects.all().order_by('nome')
 
-    # Aplica o filtro de usuário (somente se for admin e tiver escolhido alguém)
-    if eh_admin and usuario_id and usuario_id != 'Todos':
+    # Aplica o filtro de usuário (agora liberado para todos, não apenas admins)
+    if usuario_id and usuario_id != 'Todos':
         qs = qs.filter(usuario_id=usuario_id)
+    # -------------------
 
     # A MÁGICA DA PERFORMANCE: Traz apenas o que foi EMPRESTADO na data_alvo OU DEVOLVIDO na data_alvo
     movimentacoes = qs.filter(
@@ -965,7 +963,7 @@ def painel_historico(request):
 
     context = {
         'movimentos_json': movimentos_list,
-        'eh_admin': eh_admin,
+        'eh_admin': eh_admin, # Mantido para não quebrar a lógica do HTML se usar {% if eh_admin %}
         'usuarios_lista': usuarios_lista,
         'data_filtrada': data_alvo.strftime('%Y-%m-%d'),
         'usuario_filtrado': usuario_id or 'Todos'
@@ -976,6 +974,101 @@ def painel_historico(request):
 # ==========================================
 # VIEWS PARA CONSULTA DE EMPRESTIMOS POR DATA E EXPORTAÇÃO PARA CSV
 # ==========================================
+# @user_passes_test(checar_admin, login_url='/operacao-rapida/')
+# def relatorio_emprestimos_data(request):
+#     emprestimos_lista = []
+    
+#     data_inicial = request.GET.get('data_inicial')
+#     data_final = request.GET.get('data_final')
+#     usuario_id = request.GET.get('usuario')
+#     status_filtro = request.GET.get('status')
+
+#     pesquisa_realizada = bool(request.GET)
+
+#     if pesquisa_realizada:
+#         qs = Emprestimo.objects.exclude(status='SOLICITADO').select_related('chave', 'usuario')
+        
+#         if usuario_id and usuario_id != 'Todos':
+#             qs = qs.filter(usuario_id=usuario_id)
+            
+#         d_inicial = datetime.strptime(data_inicial, '%Y-%m-%d').date() if data_inicial else None
+#         d_final = datetime.strptime(data_final, '%Y-%m-%d').date() if data_final else None
+
+#         for emp in qs:
+#             chave_nome = emp.chave.nome if emp.chave else '-'
+#             setor_nome = emp.chave.setor if emp.chave else '-'
+#             usr_nome = emp.usuario.nome if emp.usuario else '-'
+#             usr_mat = emp.usuario.matricula if emp.usuario else '-'
+
+#             if emp.data:
+#                 data_valida = True
+#                 if d_inicial and emp.data.date() < d_inicial: data_valida = False
+#                 if d_final and emp.data.date() > d_final: data_valida = False
+                
+#                 if data_valida and (status_filtro in ['Todos', 'NOVO', None]):
+#                     emprestimos_lista.append({
+#                         'id': emp.id,
+#                         'chave_nome': chave_nome,
+#                         'setor': setor_nome,
+#                         'usuario_nome': usr_nome,
+#                         'matricula': usr_mat,
+#                         'data_hora': emp.data,
+#                         'status': 'NOVO' 
+#                     })
+
+#             if emp.data_devolucao:
+#                 data_valida = True
+#                 if d_inicial and emp.data_devolucao.date() < d_inicial: data_valida = False
+#                 if d_final and emp.data_devolucao.date() > d_final: data_valida = False
+                
+#                 if data_valida:
+#                     evento_status = emp.status if emp.status in ['DEVOLVIDO', 'REPASSADO'] else 'DEVOLVIDO'
+#                     if (status_filtro in ['Todos', evento_status, None]):
+#                         emprestimos_lista.append({
+#                             'id': emp.id,
+#                             'chave_nome': chave_nome,
+#                             'setor': setor_nome,
+#                             'usuario_nome': usr_nome,
+#                             'matricula': usr_mat,
+#                             'data_hora': emp.data_devolucao,
+#                             'status': evento_status
+#                         })
+
+#         emprestimos_lista.sort(key=lambda x: x['data_hora'], reverse=True)
+
+#     if request.GET.get('exportar') == 'csv':
+#         response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+#         response['Content-Disposition'] = 'attachment; filename="relatorio_chaves.csv"'
+        
+#         writer = csv.writer(response, delimiter=';')
+#         writer.writerow(['ID', 'CHAVE', 'SETOR', 'USUÁRIO', 'MATRÍCULA', 'DATA/HORA', 'STATUS'])
+        
+#         for emp in emprestimos_lista:
+#             data_formatada = emp['data_hora'].strftime('%d/%m/%Y %H:%M') if emp['data_hora'] else '-'
+#             status_texto = 'ATIVO' if emp['status'] == 'NOVO' else emp['status']
+            
+#             writer.writerow([
+#                 emp['id'],
+#                 emp['chave_nome'],
+#                 emp['setor'],
+#                 emp['usuario_nome'],
+#                 emp['matricula'],
+#                 data_formatada,
+#                 status_texto
+#             ])
+            
+#         return response 
+
+#     usuarios_lista = Usuario.objects.all()
+
+#     context = {
+#         'emprestimos': emprestimos_lista,
+#         'usuarios_lista': usuarios_lista,
+#         'pesquisa_realizada': pesquisa_realizada 
+#     }
+    
+#     return render(request, 'home/relatorio/relatorio.html', context)
+
 @user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def relatorio_emprestimos_data(request):
     emprestimos_lista = []
@@ -1002,12 +1095,26 @@ def relatorio_emprestimos_data(request):
             usr_nome = emp.usuario.nome if emp.usuario else '-'
             usr_mat = emp.usuario.matricula if emp.usuario else '-'
 
+            # 1. EVENTO: NOVO EMPRÉSTIMO
             if emp.data:
                 data_valida = True
                 if d_inicial and emp.data.date() < d_inicial: data_valida = False
                 if d_final and emp.data.date() > d_final: data_valida = False
                 
                 if data_valida and (status_filtro in ['Todos', 'NOVO', None]):
+                    texto_extra = ""
+                    
+                    # Verifica se esse 'NOVO' veio de um repasse
+                    veio_de_repasse = Emprestimo.objects.filter(
+                        chave=emp.chave,
+                        status='REPASSADO',
+                        data_devolucao__gte=emp.data - timedelta(minutes=2),
+                        data_devolucao__lte=emp.data + timedelta(minutes=2)
+                    ).exclude(id=emp.id).first()
+                    
+                    if veio_de_repasse:
+                        texto_extra = f"Recebido de: {veio_de_repasse.usuario.nome}"
+
                     emprestimos_lista.append({
                         'id': emp.id,
                         'chave_nome': chave_nome,
@@ -1015,9 +1122,11 @@ def relatorio_emprestimos_data(request):
                         'usuario_nome': usr_nome,
                         'matricula': usr_mat,
                         'data_hora': emp.data,
-                        'status': 'NOVO' 
+                        'status': 'NOVO',
+                        'info_repasse': texto_extra # Adicionado aqui
                     })
 
+            # 2. EVENTO: DEVOLUÇÃO / REPASSE
             if emp.data_devolucao:
                 data_valida = True
                 if d_inicial and emp.data_devolucao.date() < d_inicial: data_valida = False
@@ -1026,6 +1135,19 @@ def relatorio_emprestimos_data(request):
                 if data_valida:
                     evento_status = emp.status if emp.status in ['DEVOLVIDO', 'REPASSADO'] else 'DEVOLVIDO'
                     if (status_filtro in ['Todos', evento_status, None]):
+                        texto_extra = ""
+                        
+                        # Verifica para quem foi repassado
+                        if evento_status == 'REPASSADO':
+                            foi_para = Emprestimo.objects.filter(
+                                chave=emp.chave,
+                                data__gte=emp.data_devolucao - timedelta(minutes=2),
+                                data__lte=emp.data_devolucao + timedelta(minutes=2)
+                            ).exclude(id=emp.id).first()
+                            
+                            if foi_para:
+                                texto_extra = f"Para: {foi_para.usuario.nome}"
+
                         emprestimos_lista.append({
                             'id': emp.id,
                             'chave_nome': chave_nome,
@@ -1033,21 +1155,27 @@ def relatorio_emprestimos_data(request):
                             'usuario_nome': usr_nome,
                             'matricula': usr_mat,
                             'data_hora': emp.data_devolucao,
-                            'status': evento_status
+                            'status': evento_status,
+                            'info_repasse': texto_extra # Adicionado aqui
                         })
 
         emprestimos_lista.sort(key=lambda x: x['data_hora'], reverse=True)
 
+    # EXPORTAÇÃO CSV/EXCEL
     if request.GET.get('exportar') == 'csv':
+        import csv
+        from django.http import HttpResponse
+        
         response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
         response['Content-Disposition'] = 'attachment; filename="relatorio_chaves.csv"'
         
         writer = csv.writer(response, delimiter=';')
-        writer.writerow(['ID', 'CHAVE', 'SETOR', 'USUÁRIO', 'MATRÍCULA', 'DATA/HORA', 'STATUS'])
+        # ADICIONAMOS A COLUNA OBSERVAÇÃO NO CABEÇALHO
+        writer.writerow(['ID', 'CHAVE', 'SETOR', 'USUÁRIO', 'MATRÍCULA', 'DATA/HORA', 'STATUS', 'OBSERVAÇÃO'])
         
         for emp in emprestimos_lista:
             data_formatada = emp['data_hora'].strftime('%d/%m/%Y %H:%M') if emp['data_hora'] else '-'
-            status_texto = 'ATIVO' if emp['status'] == 'NOVO' else emp['status']
+            status_texto = 'EMPRESTIMO' if emp['status'] == 'NOVO' else emp['status']
             
             writer.writerow([
                 emp['id'],
@@ -1056,7 +1184,8 @@ def relatorio_emprestimos_data(request):
                 emp['usuario_nome'],
                 emp['matricula'],
                 data_formatada,
-                status_texto
+                status_texto,
+                emp.get('info_repasse', '') # ADICIONADO AQUI NA LINHA EXPORTADA
             ])
             
         return response 
@@ -1070,4 +1199,3 @@ def relatorio_emprestimos_data(request):
     }
     
     return render(request, 'home/relatorio/relatorio.html', context)
-
