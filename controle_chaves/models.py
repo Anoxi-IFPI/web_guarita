@@ -192,3 +192,13 @@ class Emprestimo(models.Model):
 
     def __str__(self):
         return f'Empréstimo #{self.id} - {self.usuario}'
+    
+    
+class Notificacao(models.Model):
+    mensagem = models.CharField(max_length=255)
+    chave = models.ForeignKey(Chave, on_delete=models.CASCADE, null=True, blank=True)
+    lida = models.BooleanField(default=False)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.mensagem} - {'Lida' if self.lida else 'Não Lida'}"

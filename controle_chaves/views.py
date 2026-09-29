@@ -16,9 +16,18 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.db import transaction
 from django.views.decorators.http import require_POST
+from django.db import models
 
-from .models import Chave, Usuario, Emprestimo
+from .models import Chave, Usuario, Emprestimo, Notificacao
 from .forms import EmprestimoForm, UsuarioForm, ChaveForm
+from django.shortcuts import redirect
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import user_passes_test
+from .models import Notificacao
+# ==========================================
+# FUNÇÕES DE NOTIFICAÇÃO DE REPASSES
+# ==========================================
+# Importe o modelo se já não estiver importado
 
 
 # ==========================================
@@ -39,6 +48,16 @@ def checar_admin(user):
         
     # 4. Se não se encaixar em nada acima, bloqueia
     return False
+
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
+@require_POST
+def marcar_todas_lidas(request):
+    """Marca todas as notificações como lidas, limpando a lista"""
+    Notificacao.objects.filter(lida=False).update(lida=True)
+    
+    url_anterior = request.META.get('HTTP_REFERER', '/')
+    return redirect(url_anterior)
+
 # ==========================================
 # VIEWS DE OPERAÇÂO RAPIDA TELA INICIAL
 # ==========================================
@@ -726,7 +745,6 @@ def api_confirmar_repasse(request):
     do usuário antigo para o novo usuário.
     """
     try:
-        # Pega os dados enviados pelo JavaScript (modal)
         dados = json.loads(request.body)
         chave_id = dados.get('chave_id')
         novo_usuario_id = dados.get('novo_usuario_id')
@@ -734,12 +752,6 @@ def api_confirmar_repasse(request):
         if not chave_id or not novo_usuario_id:
             return JsonResponse({'erro': 'Dados incompletos. Faltando chave ou usuário.'}, status=400)
 
-        # 1. Busca o empréstimo ATUAL desta chave
-        # emprestimo_atual = Emprestimo.objects.filter(
-        #     chave_id=chave_id,
-        #     status__in=['NOVO', 'REPASSADO']
-        # ).first()
-        
         emprestimo_atual = Emprestimo.objects.filter(
             chave_id=chave_id,
             status='NOVO'
@@ -753,7 +765,7 @@ def api_confirmar_repasse(request):
 
         # 2. Encerra o vínculo com o usuário antigo
         emprestimo_atual.status = 'REPASSADO'
-        emprestimo_atual.data_devolucao = timezone.now() # Registra o momento exato do repasse
+        emprestimo_atual.data_devolucao = timezone.now()
         emprestimo_atual.save()
 
         # 3. Cria o novo vínculo para o novo usuário
@@ -763,10 +775,19 @@ def api_confirmar_repasse(request):
             usuario=novo_usuario,
             chave=emprestimo_atual.chave,
             status='NOVO'
-            # A data de criação já é salva automaticamente pelo auto_now_add no model
         )
 
-        # 4. Retorna sucesso para o JavaScript mostrar a tela verde!
+        # ========================================================
+        # ---> NOVO CÓDIGO: CRIAÇÃO DA NOTIFICAÇÃO <---
+        # ========================================================
+        texto_notificacao = f"Repasse: A chave {emprestimo_atual.chave.nome} foi repassada de {emprestimo_atual.usuario.nome} para {novo_usuario.nome}."
+        
+        Notificacao.objects.create(
+            mensagem=texto_notificacao,
+            chave=emprestimo_atual.chave
+        )
+        # ========================================================
+
         return JsonResponse({
             'sucesso': True,
             'mensagem': 'Repasse concluído com sucesso!',

@@ -59,4 +59,8 @@ urlpatterns = [
     path('confirmar-repasse-usuario/<int:emprestimo_id>/', views.confirmar_repasse_usuario, name='confirmar_repasse_usuario'),
     path('sucesso-repasse/', views.sucesso_repasse, name='sucesso_repasse'),
 
+    #NOTIFICACOES
+    # Não esqueça de importar a view 'marcar_todas_lidas'
+    path('notificacoes/marcar-lidas/', views.marcar_todas_lidas, name='marcar_todas_lidas'),
+
 ]
