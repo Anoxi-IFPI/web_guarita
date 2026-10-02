@@ -129,8 +129,24 @@ def logout_usuario(request):
 # ==========================================
 @user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def painel_admin(request):
-    chaves = Chave.objects.all()
-    return render(request, 'home/index.html', {'chaves': chaves})
+    # Calcula os totais diretamente do banco
+    total_chaves = Chave.objects.count()
+    total_usuarios = Usuario.objects.count()
+    
+    # Conta quantos empréstimos estão ativos no momento
+    chaves_emprestadas = Emprestimo.objects.filter(status='NOVO').count()
+    
+    # A diferença nos dá as chaves que estão na guarita
+    chaves_disponiveis = total_chaves - chaves_emprestadas
+
+    contexto = {
+        'total_chaves': total_chaves,
+        'chaves_emprestadas': chaves_emprestadas,
+        'chaves_disponiveis': chaves_disponiveis,
+        'total_usuarios': total_usuarios,
+    }
+    
+    return render(request, 'home/index.html', contexto)
 
 # ==========================================
 # TELAS PARA GERENCIA DE USUÁRIOS (CRUD)

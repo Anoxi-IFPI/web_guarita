@@ -3,12 +3,55 @@
 {% block titulo %}Página Inicial{% endblock %}
 
 {% block conteudo %}
-    <div class="row">
+    <div class="row mb-4">
         <div class="col-md-12">
             <h2>Bem-vindo à Gestão de Chaves</h2>
-            <p>Esta é a página inicial do sistema de gestão de chaves.</p>
+            <p>Esta é a página inicial do sistema de gestão de chaves. Confira abaixo o resumo atual do sistema.</p>
         </div>
     </div>
 
+    <!-- Linha com os Quadrados (Cards de Informação Rápida) -->
+    <div class="row">
+        
+        <!-- Card 1: Chaves Disponíveis (Verde) -->
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-white bg-success h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase fw-bold">Chaves Disponíveis</h6>
+                    <h1 class="display-5 fw-bold mb-0">{{ chaves_disponiveis }}</h1>
+                </div>
+            </div>
+        </div>
 
+        <!-- Card 2: Chaves Emprestadas (Amarelo) -->
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-dark bg-warning h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase fw-bold">Chaves Emprestadas</h6>
+                    <h1 class="display-5 fw-bold mb-0">{{ chaves_emprestadas }}</h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Total de Chaves (Cinza/Secundário) -->
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-white bg-secondary h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase fw-bold">Total de Chaves</h6>
+                    <h1 class="display-5 fw-bold mb-0">{{ total_chaves }}</h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Total de Usuários (Azul) -->
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-white bg-primary h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase fw-bold">Usuários Cadastrados</h6>
+                    <h1 class="display-5 fw-bold mb-0">{{ total_usuarios }}</h1>
+                </div>
+            </div>
+        </div>
+        
+    </div>
 {% endblock %}
