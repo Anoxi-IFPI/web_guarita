@@ -24,6 +24,7 @@ from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import user_passes_test
 from .models import Notificacao
+from django.utils.crypto import get_random_string
 # ==========================================
 # FUNÇÕES DE NOTIFICAÇÃO DE REPASSES
 # ==========================================
@@ -151,6 +152,46 @@ def painel_admin(request):
 # ==========================================
 # TELAS PARA GERENCIA DE USUÁRIOS (CRUD)
 # ==========================================
+# def cadastrar_usuario(request):
+#     if request.method == 'POST':
+#         form = UsuarioForm(request.POST) 
+        
+#         if form.is_valid():
+#             # Inicia uma transação segura: ou salva tudo, ou não salva nada
+#             try:
+#                 with transaction.atomic():
+#                     # 1. Pega os dados validados do formulário
+#                     matricula = form.cleaned_data.get('matricula')
+#                     nome = form.cleaned_data.get('nome')
+#                     email = form.cleaned_data.get('email', '')
+
+#                     # 2. Cria o usuário nativo do Django (Motor de Login)
+#                     # O username será a matrícula, e a senha também
+#                     novo_user_django = User.objects.create_user(
+#                         username=matricula,
+#                         password=matricula, 
+#                         email=email,
+#                         first_name=nome.split()[0] # Pega só o primeiro nome
+#                     )
+
+#                     # 3. Salva o SEU perfil de usuário e conecta com o do Django
+#                     perfil_usuario = form.save(commit=False) # Pausa o salvamento
+#                     perfil_usuario.user = novo_user_django   # Faz a conexão OneToOne
+#                     perfil_usuario.save()                    # Finaliza o salvamento no banco
+
+#                 messages.success(request, 'Usuário cadastrado com sucesso!')
+#                 return redirect('listar_usuario')
+                
+#             except Exception as e:
+#                 messages.error(request, f'Erro interno ao criar usuário: {str(e)}')
+#         else:
+#             messages.error(request, 'Erro ao cadastrar. Por favor, verifique os dados.')
+            
+#     else:
+#         form = UsuarioForm()
+        
+#     return render(request, 'home/usuarios/form.html', {'form': form})
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def cadastrar_usuario(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST) 
@@ -165,7 +206,7 @@ def cadastrar_usuario(request):
                     email = form.cleaned_data.get('email', '')
 
                     # 2. Cria o usuário nativo do Django (Motor de Login)
-                    # O username será a matrícula, e a senha também
+                    # O username será a matrícula, e a senha também (PARA TESTES)
                     novo_user_django = User.objects.create_user(
                         username=matricula,
                         password=matricula, 
@@ -200,6 +241,7 @@ def listar_usuario(request): # <--- CERTIFIQUE-SE DE QUE O NOME É ESTE
     return render(request, 'home/usuarios/listagem.html', contexto)
 
 
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def editar_usuario(request, id):
     try:
         usuario_instancia = Usuario.objects.get(pk=id)
@@ -235,7 +277,7 @@ def editar_usuario(request, id):
     
     return render(request, 'home/usuarios/form.html', {'form': form})
 
-
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def remover_usuario(request, id):
     try:
         usuario_instancia = Usuario.objects.get(pk=id)
@@ -254,6 +296,7 @@ def remover_usuario(request, id):
 
     return redirect('listar_usuario')
 
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 # Função para detalhar usuário
 def detalhar_usuario(request, id):
     # 1. Busca o usuário específico pelo ID
@@ -273,7 +316,7 @@ def detalhar_usuario(request, id):
 # ==========================================
 # VIEWS PARA GESTÃO DE CHAVES
 # ==========================================
-
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def listar_chave(request):
     # 1. Busca todas as chaves no banco e ordena da mais nova para a mais velha
     contexto = {
@@ -405,6 +448,7 @@ def listar_emprestimos(request):
     emprestimos = Emprestimo.objects.filter(status='NOVO')
     return render(request, 'home/emprestimos/listagem.html', {'lista': emprestimos})
 
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def cadastrar_emprestimo(request):
     if request.method == 'POST':
         # SALVA A ORIGEM: Se vier da tela rápida, salva 'rapida'. Se não, o padrão é 'admin'.
@@ -440,7 +484,7 @@ def cadastrar_emprestimo(request):
     return render(request, 'home/emprestimos/forms.html', {'form': form})
 
 
-
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def adicionar_chaves_emprestimo(request, id):
     try:
         usuario = Usuario.objects.get(id=id)
@@ -461,6 +505,8 @@ def adicionar_chaves_emprestimo(request, id):
     }
     return render(request, 'home/emprestimos/emprestimo.html', contexto)
 
+
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def api_adicionar_chave_emprestimo(request):
     codigo = request.GET.get('codigo', '').strip()
     usuario_id = request.GET.get('usuario_id', '').strip()
@@ -511,6 +557,8 @@ def api_adicionar_chave_emprestimo(request):
     except Usuario.DoesNotExist:
         return JsonResponse({'erro': 'Usuário não encontrado!'}, status=200)
 
+
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def finalizar_emprestimo(request, id):
     try:
         usuario = Usuario.objects.get(id=id)
@@ -548,6 +596,8 @@ def finalizar_emprestimo(request, id):
         # messages.error(request, 'Nenhuma chave encontrada para finalizar.')
         return redirect('listar_emprestimos')
 
+
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def remover_emprestimo(request, id):
     Emprestimo.objects.filter(usuario_id=id, status='SOLICITADO').delete()
     
@@ -559,6 +609,7 @@ def remover_emprestimo(request, id):
         
     return redirect('listar_emprestimos')
 
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def remover_chave_emprestimo(request, emprestimo_id, chave_id):
     try:
         emprestimo = Emprestimo.objects.get(id=emprestimo_id)
@@ -572,7 +623,7 @@ def remover_chave_emprestimo(request, emprestimo_id, chave_id):
 # ==========================================
 # VIEWS PARA NOVA DEVOLUÇÃO INSTANTÂNEA
 # ==========================================
-
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def api_buscar_chave_devolucao(request):
     codigo = request.GET.get('codigo', '').strip()
     
@@ -614,7 +665,7 @@ def api_buscar_chave_devolucao(request):
         'usuario_matricula': emprestimo.usuario.matricula
     })
 
-
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def devolver_emprestimo(request):
     if request.method == 'POST':
         codigo = request.POST.get('codigo', '').strip()
@@ -703,7 +754,7 @@ def tela_repasse(request):
 # ==========================================
 # NOVAS APIs PARA O PAINEL DE REPASSE DO ADMIN
 # ==========================================
-
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def api_admin_buscar_chave_repasse(request):
     """Busca quem está com a chave através do código de barras"""
     codigo = request.GET.get('codigo', '').strip()
@@ -729,7 +780,7 @@ def api_admin_buscar_chave_repasse(request):
         }]
     })
 
-
+@user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def api_admin_buscar_chaves_usuario(request):
     """Busca todas as chaves em posse de um usuário selecionado no Select"""
     usuario_id = request.GET.get('usuario_id', '').strip()
@@ -754,6 +805,7 @@ def api_admin_buscar_chaves_usuario(request):
     return JsonResponse({'sucesso': True, 'emprestimos': lista_chaves})
 
 
+@login_required(login_url='/')
 @require_POST
 def api_confirmar_repasse(request):
     """
@@ -818,7 +870,7 @@ def api_confirmar_repasse(request):
     except Exception as e:
         return JsonResponse({'erro': f'Erro interno: {str(e)}'}, status=500)
 
-
+@login_required(login_url='/')
 def api_buscar_usuarios(request):
     """
     Retorna uma lista de usuários em formato JSON baseada no termo de busca.
@@ -1011,100 +1063,6 @@ def painel_historico(request):
 # ==========================================
 # VIEWS PARA CONSULTA DE EMPRESTIMOS POR DATA E EXPORTAÇÃO PARA CSV
 # ==========================================
-# @user_passes_test(checar_admin, login_url='/operacao-rapida/')
-# def relatorio_emprestimos_data(request):
-#     emprestimos_lista = []
-    
-#     data_inicial = request.GET.get('data_inicial')
-#     data_final = request.GET.get('data_final')
-#     usuario_id = request.GET.get('usuario')
-#     status_filtro = request.GET.get('status')
-
-#     pesquisa_realizada = bool(request.GET)
-
-#     if pesquisa_realizada:
-#         qs = Emprestimo.objects.exclude(status='SOLICITADO').select_related('chave', 'usuario')
-        
-#         if usuario_id and usuario_id != 'Todos':
-#             qs = qs.filter(usuario_id=usuario_id)
-            
-#         d_inicial = datetime.strptime(data_inicial, '%Y-%m-%d').date() if data_inicial else None
-#         d_final = datetime.strptime(data_final, '%Y-%m-%d').date() if data_final else None
-
-#         for emp in qs:
-#             chave_nome = emp.chave.nome if emp.chave else '-'
-#             setor_nome = emp.chave.setor if emp.chave else '-'
-#             usr_nome = emp.usuario.nome if emp.usuario else '-'
-#             usr_mat = emp.usuario.matricula if emp.usuario else '-'
-
-#             if emp.data:
-#                 data_valida = True
-#                 if d_inicial and emp.data.date() < d_inicial: data_valida = False
-#                 if d_final and emp.data.date() > d_final: data_valida = False
-                
-#                 if data_valida and (status_filtro in ['Todos', 'NOVO', None]):
-#                     emprestimos_lista.append({
-#                         'id': emp.id,
-#                         'chave_nome': chave_nome,
-#                         'setor': setor_nome,
-#                         'usuario_nome': usr_nome,
-#                         'matricula': usr_mat,
-#                         'data_hora': emp.data,
-#                         'status': 'NOVO' 
-#                     })
-
-#             if emp.data_devolucao:
-#                 data_valida = True
-#                 if d_inicial and emp.data_devolucao.date() < d_inicial: data_valida = False
-#                 if d_final and emp.data_devolucao.date() > d_final: data_valida = False
-                
-#                 if data_valida:
-#                     evento_status = emp.status if emp.status in ['DEVOLVIDO', 'REPASSADO'] else 'DEVOLVIDO'
-#                     if (status_filtro in ['Todos', evento_status, None]):
-#                         emprestimos_lista.append({
-#                             'id': emp.id,
-#                             'chave_nome': chave_nome,
-#                             'setor': setor_nome,
-#                             'usuario_nome': usr_nome,
-#                             'matricula': usr_mat,
-#                             'data_hora': emp.data_devolucao,
-#                             'status': evento_status
-#                         })
-
-#         emprestimos_lista.sort(key=lambda x: x['data_hora'], reverse=True)
-
-#     if request.GET.get('exportar') == 'csv':
-#         response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
-#         response['Content-Disposition'] = 'attachment; filename="relatorio_chaves.csv"'
-        
-#         writer = csv.writer(response, delimiter=';')
-#         writer.writerow(['ID', 'CHAVE', 'SETOR', 'USUÁRIO', 'MATRÍCULA', 'DATA/HORA', 'STATUS'])
-        
-#         for emp in emprestimos_lista:
-#             data_formatada = emp['data_hora'].strftime('%d/%m/%Y %H:%M') if emp['data_hora'] else '-'
-#             status_texto = 'ATIVO' if emp['status'] == 'NOVO' else emp['status']
-            
-#             writer.writerow([
-#                 emp['id'],
-#                 emp['chave_nome'],
-#                 emp['setor'],
-#                 emp['usuario_nome'],
-#                 emp['matricula'],
-#                 data_formatada,
-#                 status_texto
-#             ])
-            
-#         return response 
-
-#     usuarios_lista = Usuario.objects.all()
-
-#     context = {
-#         'emprestimos': emprestimos_lista,
-#         'usuarios_lista': usuarios_lista,
-#         'pesquisa_realizada': pesquisa_realizada 
-#     }
-    
-#     return render(request, 'home/relatorio/relatorio.html', context)
 
 @user_passes_test(checar_admin, login_url='/operacao-rapida/')
 def relatorio_emprestimos_data(request):
