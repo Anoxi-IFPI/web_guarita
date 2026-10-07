@@ -1,0 +1,18 @@
+    /* Dica visual de rolagem horizontal para celulares */
+    @media (max-width: 992px) {
+        .table-responsive-hint::after {
+            content: "← Deslize a tabela para ver mais →";
+            display: block;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #6c757d;
+            padding: 10px 0 5px 0;
+            font-style: italic;
+        }
+    }
+
+    /* Impede que a tabela esmague os textos e botões no mobile */
+    .table td, .table th {
+        white-space: nowrap;
+        vertical-align: middle !important;
+    }

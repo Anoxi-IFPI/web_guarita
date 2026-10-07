@@ -130,7 +130,7 @@ STORAGES = {
 }
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static'] #Diz onde estão os arquivos estáticos do projeto
+# STATICFILES_DIRS = [BASE_DIR / 'static'] #Diz onde estão os arquivos estáticos do projeto
 
 STATIC_ROOT = BASE_DIR / 'staticfiles' #Empacota os arquivos estáticos para produção na vercel
 

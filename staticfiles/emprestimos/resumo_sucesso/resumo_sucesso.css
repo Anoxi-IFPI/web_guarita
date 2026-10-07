@@ -1,36 +1,36 @@
-    /* Ícone verde menor, focado no minimalismo */
+/* Ícone verde menor, focado no minimalismo */
     .success-icon-bg {
         background-color: var(--ifpi-verde, #198754);
-        width: 60px; /* Reduzido o tamanho */
-        height: 60px;
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 15px auto; /* Menos margem vertical */
+        margin: 0 auto 12px auto;
         box-shadow: 0 4px 10px rgba(25, 135, 84, 0.2);
     }
     .success-icon-bg i {
         color: white;
-        font-size: 1.8rem; /* Ícone menor */
+        font-size: 1.5rem;
     }
     
-    /* A caixa do recibo mais larga e horizontal */
+    /* A caixa do recibo */
     .resumo-box {
         background-color: #f8fafc;
         border: 1px solid #e9eef3;
         border-radius: 12px;
-        padding: 20px 40px;
-        max-width: 1000px; /* Bem mais largo para preencher a tela */
+        padding: 15px 20px;
+        max-width: 1000px;
         width: 100%;
-        margin: 20px auto 25px auto; /* Diminuído o buraco branco nas margens */
+        margin: 15px auto 20px auto;
     }
     
     .resumo-linha {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 0; /* Menos altura para não ficar um paredão vertical */
+        padding: 12px 0;
         border-bottom: 1px dashed #cbd5e1; 
     }
     
@@ -41,13 +41,14 @@
     
     .resumo-label {
         color: #64748b;
-        font-size: 1.1rem;
+        font-size: 0.95rem;
         font-weight: 500;
+        flex-shrink: 0; /* Impede que o título do campo seja esmagado */
     }
     
     .resumo-valor {
         color: #0f172a;
-        font-size: 1.15rem;
+        font-size: 1rem;
         font-weight: 600;
         text-align: right;
     }
@@ -55,10 +56,52 @@
     .chave-badge {
         background-color: #e8eef6;
         color: #1a4b8c;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 1rem;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.85rem;
         font-weight: 600;
         display: inline-block;
-        margin-left: 8px;
+        margin: 2px;
+    }
+
+    /* ==========================================
+       MOBILE CORRIGIDO: EMPILHADO COM ORDEM PERFEITA
+       ========================================== */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 12px !important;
+        }
+
+        .resumo-box {
+            padding: 12px 12px;
+        }
+
+        /* Cada linha vira um bloco vertical limpo */
+        .resumo-linha {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 10px 0;
+        }
+
+        /* O rótulo fica em cima discretamente */
+        .resumo-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 2px;
+        }
+
+        /* O valor fica embaixo, alinhado à esquerda e com espaço correto */
+        .resumo-valor {
+            text-align: left;
+            font-size: 1.05rem;
+            width: 100%;
+        }
+
+        /* Ajuste específico para as chaves lidas não quebrarem o layout */
+        .resumo-linha .d-flex {
+            max-width: 100% !important;
+            width: 100%;
+            justify-content: flex-start !important;
+            margin-top: 2px;
+        }
     }

@@ -1,0 +1,19 @@
+
+    /* Ajustes específicos para evitar quebra e sobreposição no Mobile */
+    @media (max-width: 768px) {
+        /* Força a lista gerada via JS a não sobrepor a tag de status no texto */
+        #lista_chaves li, #lista_chaves div.list-group-item {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            padding: 15px !important;
+        }
+        #lista_chaves .badge {
+            position: relative !important;
+            right: auto !important;
+            top: auto !important;
+            transform: none !important;
+            margin-top: 10px !important;
+            align-self: flex-start !important;
+        }
+    }

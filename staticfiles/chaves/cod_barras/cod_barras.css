@@ -1,0 +1,53 @@
+ /* 1. Estilos para a Tela (Como o usuário vê no monitor) */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #e9ecef; /* Fundo cinza claro para destacar o cartão */
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .cartao-etiqueta {
+            background-color: #ffffff;
+            width: 250px; /* Largura retangular */
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1); /* Sombra suave */
+            text-align: center;
+            /* Usando a variável de cor verde padrão */
+            border-top: 6px solid var(--ifpi-verde, #2E8B57); 
+        }
+
+        .cartao-etiqueta h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cartao-etiqueta img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 2. Estilos EXCLUSIVOS para Impressora*/
+        @media print {
+            body {
+                background-color: white; /* Remove o fundo cinza */
+                height: auto;
+                align-items: flex-start; /* Joga a etiqueta para o topo da folha */
+                justify-content: flex-start;
+            }
+
+            .cartao-etiqueta {
+                box-shadow: none; /* Impressora não precisa de sombra */
+                border: 1px dashed #000; /* Borda tracejada para ajudar a recortar com tesoura */
+                border-top: 6px solid #000; /* Borda superior preta (economia de tinta colorida) */
+                width: 6cm; /* Define um tamanho físico real para a etiqueta */
+                padding: 10px;
+                border-radius: 0; /* Tira o arredondado para facilitar o corte */
+            }
+        }
