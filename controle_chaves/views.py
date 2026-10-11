@@ -1092,10 +1092,14 @@ def relatorio_emprestimos_data(request):
             usr_mat = emp.usuario.matricula if emp.usuario else '-'
 
             # 1. EVENTO: NOVO EMPRÉSTIMO
+            # 1. EVENTO: NOVO EMPRÉSTIMO
             if emp.data:
                 data_valida = True
-                if d_inicial and emp.data.date() < d_inicial: data_valida = False
-                if d_final and emp.data.date() > d_final: data_valida = False
+                # Converte para o fuso horário local antes de pegar a data
+                data_local = timezone.localtime(emp.data).date()
+                
+                if d_inicial and data_local < d_inicial: data_valida = False
+                if d_final and data_local > d_final: data_valida = False
                 
                 if data_valida and (status_filtro in ['Todos', 'NOVO', None]):
                     texto_extra = ""
@@ -1125,9 +1129,11 @@ def relatorio_emprestimos_data(request):
             # 2. EVENTO: DEVOLUÇÃO / REPASSE
             if emp.data_devolucao:
                 data_valida = True
-                if d_inicial and emp.data_devolucao.date() < d_inicial: data_valida = False
-                if d_final and emp.data_devolucao.date() > d_final: data_valida = False
+                # Converte para o fuso horário local antes de pegar a data
+                data_devolucao_local = timezone.localtime(emp.data_devolucao).date()
                 
+                if d_inicial and data_devolucao_local < d_inicial: data_valida = False
+                if d_final and data_devolucao_local > d_final: data_valida = False
                 if data_valida:
                     evento_status = emp.status if emp.status in ['DEVOLVIDO', 'REPASSADO'] else 'DEVOLVIDO'
                     if (status_filtro in ['Todos', evento_status, None]):
@@ -1170,7 +1176,7 @@ def relatorio_emprestimos_data(request):
         writer.writerow(['ID', 'CHAVE', 'SETOR', 'USUÁRIO', 'MATRÍCULA', 'DATA/HORA', 'STATUS', 'OBSERVAÇÃO'])
         
         for emp in emprestimos_lista:
-            data_formatada = emp['data_hora'].strftime('%d/%m/%Y %H:%M') if emp['data_hora'] else '-'
+            data_formatada = timezone.localtime(emp['data_hora']).strftime('%d/%m/%Y %H:%M') if emp['data_hora'] else '-'
             status_texto = 'EMPRESTIMO' if emp['status'] == 'NOVO' else emp['status']
             
             writer.writerow([
