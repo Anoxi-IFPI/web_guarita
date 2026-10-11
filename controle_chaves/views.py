@@ -967,9 +967,9 @@ def painel_historico(request):
         try:
             data_alvo = datetime.strptime(data_str, '%Y-%m-%d').date()
         except ValueError:
-            data_alvo = timezone.now().date()
+            data_alvo = timezone.localdate() # <-- CORRIGIDO
     else:
-        data_alvo = timezone.now().date()
+        data_alvo = timezone.localdate() # <-- CORRIGIDO
 
     # --- MUDANÇA AQUI ---
     # Agora a consulta principal traz tudo para TODOS os usuários
@@ -990,7 +990,7 @@ def painel_historico(request):
     
     for mov in movimentacoes:
         # 1. EVENTO DE SAÍDA DA CHAVE (Ocorreu no dia alvo)
-        if mov.data and mov.data.date() == data_alvo:
+        if mov.data and timezone.localtime(mov.data).date() == data_alvo: # <-- CORRIGIDO
             hora_local = timezone.localtime(mov.data).strftime('%H:%M')
             texto_extra = ""
             
@@ -1017,7 +1017,8 @@ def painel_historico(request):
             })
 
         # 2. EVENTO DE ENTRADA DA CHAVE (Devolução/Repasse ocorreu no dia alvo)
-        if mov.data_devolucao and mov.data_devolucao.date() == data_alvo:
+        # 2. EVENTO DE ENTRADA DA CHAVE (Devolução/Repasse ocorreu no dia alvo)
+        if mov.data_devolucao and timezone.localtime(mov.data_devolucao).date() == data_alvo: # <-- CORRIGIDO
             tipo_evento = 'repassado' if mov.status == 'REPASSADO' else 'devolvido'
             hora_devolucao_local = timezone.localtime(mov.data_devolucao).strftime('%H:%M')
             
