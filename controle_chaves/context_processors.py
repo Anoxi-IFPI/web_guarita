@@ -1,25 +1,23 @@
 from .models import Notificacao
 
 def notificacoes_guarita(request):
-    # Se o usuário não estiver logado, não envia nada
     if not request.user.is_authenticated:
         return {}
     
-    # Verifica se é admin/guarita
-    eh_admin = False
-    if request.user.is_superuser:
-        eh_admin = True
-    elif hasattr(request.user, 'perfil') and request.user.perfil.vinculo in ['GUARITA', 'ADMIN']:
-        eh_admin = True
-        
-    # Se for admin, busca as notificações não lidas
-    if eh_admin:
-        nao_lidas = Notificacao.objects.filter(lida=False).order_by('-data_criacao')
-        qtd_nao_lidas = nao_lidas.count()
-        return {
-            'notificacoes_nao_lidas': nao_lidas,
-            'qtd_notificacoes': qtd_nao_lidas
-        }
+    eh_admin = request.user.is_superuser or (hasattr(request.user, 'perfil') and request.user.perfil.vinculo in ['GUARITA', 'ADMIN'])
     
-    # Se não for admin, não envia notificações
-    return {}
+    # Se for admin, busca as notificações gerais (sem destinatário específico)
+    if eh_admin:
+        nao_lidas = Notificacao.objects.filter(lida=False, destinatario__isnull=True).order_by('-data_criacao')
+    
+    # Se for aluno/usuário comum, busca APENAS as notificações dele
+    elif hasattr(request.user, 'perfil'):
+        nao_lidas = Notificacao.objects.filter(lida=False, destinatario=request.user.perfil).order_by('-data_criacao')
+    
+    else:
+        nao_lidas = Notificacao.objects.none()
+
+    return {
+        'notificacoes_nao_lidas': nao_lidas[:10], # Mostra no máximo as 10 mais recentes
+        'qtd_notificacoes': nao_lidas.count()
+    }

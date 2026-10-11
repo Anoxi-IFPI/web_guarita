@@ -24,7 +24,7 @@
             <span class="time" id="currentTime"></span>
 
             <!-- NOTIFICAÇÕES (ADMIN / GUARITA) -->
-            {% if eh_admin or request.user.is_superuser or request.user.perfil.vinculo in 'GUARITA,ADMIN' %}
+            {% if request.user.is_authenticated %}
             <div class="dropdown">
                 <!-- Ícone do Sino -->
                 <a href="#" class="position-relative d-flex align-items-center text-white text-decoration-none" id="sinoNotificacao" data-bs-toggle="dropdown" aria-expanded="false" title="Notificações">

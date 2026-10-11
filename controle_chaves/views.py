@@ -50,12 +50,19 @@ def checar_admin(user):
     # 4. Se não se encaixar em nada acima, bloqueia
     return False
 
-@user_passes_test(checar_admin, login_url='/operacao-rapida/')
+@login_required(login_url='/')  # <--- Mudou aqui: liberado para todos logados
 @require_POST
 def marcar_todas_lidas(request):
-    """Marca todas as notificações como lidas, limpando a lista"""
-    Notificacao.objects.filter(lida=False).update(lida=True)
+    """Marca as notificações do usuário logado como lidas"""
+    eh_admin = checar_admin(request.user)
     
+    if eh_admin:
+        # Admin marca como lidas as notificações gerais
+        Notificacao.objects.filter(lida=False, destinatario__isnull=True).update(lida=True)
+    elif hasattr(request.user, 'perfil'):
+        # Usuário comum marca como lidas apenas as suas notificações pessoais
+        Notificacao.objects.filter(lida=False, destinatario=request.user.perfil).update(lida=True)
+        
     url_anterior = request.META.get('HTTP_REFERER', '/')
     return redirect(url_anterior)
 
@@ -848,12 +855,31 @@ def api_confirmar_repasse(request):
         # ========================================================
         # ---> NOVO CÓDIGO: CRIAÇÃO DA NOTIFICAÇÃO <---
         # ========================================================
-        texto_notificacao = f"Repasse: A chave {emprestimo_atual.chave.nome} foi repassada de {emprestimo_atual.usuario.nome} para {novo_usuario.nome}."
         
+        # 1. Notificação para a Guarita/Admin (Geral)
+        texto_admin = f"Repasse: A chave {emprestimo_atual.chave.nome} foi repassada de {emprestimo_atual.usuario.nome} para {novo_usuario.nome}."
         Notificacao.objects.create(
-            mensagem=texto_notificacao,
-            chave=emprestimo_atual.chave
+            mensagem=texto_admin, 
+            chave=emprestimo_atual.chave, 
+            destinatario=None # Admin vê as que não tem destinatário
         )
+
+        # 2. Notificação Pessoal para quem REPASSOU (Usuário Antigo)
+        texto_antigo = f"Você repassou a chave {emprestimo_atual.chave.nome} para {novo_usuario.nome}."
+        Notificacao.objects.create(
+            mensagem=texto_antigo, 
+            chave=emprestimo_atual.chave, 
+            destinatario=emprestimo_atual.usuario
+        )
+
+        # 3. Notificação Pessoal para quem RECEBEU (Novo Usuário)
+        texto_novo = f"Você recebeu a chave {emprestimo_atual.chave.nome} de {emprestimo_atual.usuario.nome}."
+        Notificacao.objects.create(
+            mensagem=texto_novo, 
+            chave=emprestimo_atual.chave, 
+            destinatario=novo_usuario
+        )
+        
         # ========================================================
 
         return JsonResponse({
